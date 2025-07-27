@@ -3,27 +3,16 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-   const database = await db();
-    const data = await database.collection('users').find({}).toArray();
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    
+    const data = await db.collection('pages').find({}).toArray();
+    
     return NextResponse.json(data);
   } catch (e) {
+    console.log(e);
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request) {
-  try {
-    const database = await db();
-    const body = await request.json();
-
-    const result = await database.collection('users').insertOne(body);
-    return NextResponse.json(result, { status: 201 });
-  } catch (e) {
-    return NextResponse.json(
-      { error: 'Failed to create user' },
+      { error: 'Failed to fetch data' },
       { status: 500 }
     );
   }
