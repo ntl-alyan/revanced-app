@@ -1,11 +1,11 @@
-import React from 'react'
 
-function page() {
+import React from 'react';
+
+export default function Page() {
   return (
-   <>
-   This is Dashboard Page
-   </>
-  )
-}
+    <div className="container mt-5">
+      <h1 className="display-1">This is Bootstrap Heading</h1>
 
-export default page
+    </div>
+  );
+}
