@@ -52,22 +52,21 @@ const homepageFormSchema = z.object({
   ogImage: z.string().optional(),
 });
 
-type HomepageFormValues = z.infer<typeof homepageFormSchema>;
 
 export default function HomepagePage() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("content");
+  const [activeTab, setActiveTab] = useState("content");
   
   // Fetch homepage data
-  const { data: homepageData, isLoading } = useQuery<Homepage>({
+  const { data: homepageData, isLoading } = useQuery({
     queryKey: ["/api/homepage"],
   });
   
   // Setup form with homepage data
-  const form = useForm<HomepageFormValues>({
+  const form = useForm({
     resolver: zodResolver(homepageFormSchema),
     defaultValues: {
-      sections: homepageData?.sections || ([] as any),
+      sections: homepageData?.sections || [] ,
       version: homepageData?.version || '',
       downloadUrl: homepageData?.downloadUrl || '',
       downloadId: homepageData?.downloadId || '',
@@ -105,7 +104,7 @@ export default function HomepagePage() {
   useEffect(() => {
     if (homepageData) {
       form.reset({
-        sections: (homepageData.sections || []) as any,
+        sections: homepageData.sections || [],
         version: homepageData.version || '',
         downloadUrl: homepageData.downloadUrl || '',
         downloadId: homepageData.downloadId || '',
@@ -121,7 +120,7 @@ export default function HomepagePage() {
   
   // Setup mutation for updating homepage
   const updateMutation = useMutation({
-    mutationFn: async (data: HomepageFormValues) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("PATCH", "/api/homepage", data);
       return await res.json();
     },
@@ -142,12 +141,12 @@ export default function HomepagePage() {
   });
   
   // Handle form submission
-  const onSubmit = (data: HomepageFormValues) => {
+  const onSubmit = (data) => {
     updateMutation.mutate(data);
   };
   
   // Move a section up
-  const moveUp = (index: number) => {
+  const moveUp = (index) => {
     if (index === 0) return;
     const sections = [...form.getValues().sections];
     const temp = sections[index];
@@ -157,7 +156,7 @@ export default function HomepagePage() {
   };
 
   // Move a section down
-  const moveDown = (index: number) => {
+  const moveDown = (index) => {
     const sections = [...form.getValues().sections];
     if (index === sections.length - 1) return;
     const temp = sections[index];
@@ -190,7 +189,7 @@ export default function HomepagePage() {
   };
   
   // Add item to a section
-  const addItem = (sectionIndex: number) => {
+  const addItem = (sectionIndex) => {
     const currentSections = form.getValues().sections;
     const currentSection = currentSections[sectionIndex];
     
@@ -209,7 +208,7 @@ export default function HomepagePage() {
   };
   
   // Remove item from a section
-  const removeItem = (sectionIndex: number, itemIndex: number) => {
+  const removeItem = (sectionIndex, itemIndex) => {
     const currentSections = form.getValues().sections;
     const currentSection = currentSections[sectionIndex];
     

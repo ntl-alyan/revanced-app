@@ -5,9 +5,7 @@ import { Link, useLocation } from 'wouter';
 import { PlusCircle, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { apiRequest } from '@/lib/queryClient';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -16,7 +14,6 @@ import { useToast } from '@/hooks/use-toast';
 import { CustomBreadcrumb } from '@/components/ui/custom-breadcrumb';
 import { 
   Dialog, 
-  DialogTrigger, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
@@ -26,32 +23,13 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 
-interface StructuredData {
-  _id: string;
-  entityType: string;
-  entityId: string;
-  schemaType: string;
-  schemaData: any;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface InsertStructuredData {
-  entityType: string;
-  entityId: string;
-  schemaType: string;
-  schemaData: any;
-}
 
 const StructuredDataPage = () => {
   const [, setLocation] = useLocation();
@@ -60,15 +38,15 @@ const StructuredDataPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedData, setSelectedData] = useState<StructuredData | null>(null);
-  const [newData, setNewData] = useState<InsertStructuredData>({
+  const [selectedData, setSelectedData] = useState(null);
+  const [newData, setNewData] = useState({
     entityType: 'app',
     entityId: '',
     schemaType: 'Product',
     schemaData: '{}',
   });
 
-  const { data: structuredDataList = [], isLoading, refetch } = useQuery<StructuredData[]>({
+  const { data: structuredDataList = [], isLoading, refetch } = useQuery({
     queryKey: ['/api/structured-data'],
     queryFn: async () => {
       const res = await fetch('/api/structured-data');
@@ -77,7 +55,7 @@ const StructuredDataPage = () => {
     },
   });
 
-  const { data: appsList = [] } = useQuery<any[]>({
+  const { data: appsList = [] } = useQuery({
     queryKey: ['/api/apps'],
     queryFn: async () => {
       const res = await fetch('/api/apps');
@@ -87,7 +65,7 @@ const StructuredDataPage = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertStructuredData) => {
+    mutationFn: async (data) => {
       const processedData = {
         ...data,
         schemaData: typeof data.schemaData === 'string' ? JSON.parse(data.schemaData) : data.schemaData,
@@ -118,7 +96,7 @@ const StructuredDataPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id) => {
       return await apiRequest('DELETE', `/api/structured-data/${id}`);
     },
     onSuccess: () => {
@@ -139,7 +117,7 @@ const StructuredDataPage = () => {
     },
   });
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = (e) => {
     e.preventDefault();
     try {
       // Validate JSON
@@ -168,7 +146,7 @@ const StructuredDataPage = () => {
     data.entityId.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getEntityName = (entityType: string, entityId: string) => {
+  const getEntityName = (entityType, entityId) => {
     if (entityType === 'app') {
       const app = appsList.find(app => app._id === entityId);
       return app ? app.name : entityId;
@@ -176,7 +154,7 @@ const StructuredDataPage = () => {
     return entityId;
   };
 
-  const formatSchemaData = (data: any) => {
+  const formatSchemaData = (data) => {
     if (!data) return '{}';
     try {
       if (typeof data === 'string') {
@@ -188,7 +166,7 @@ const StructuredDataPage = () => {
     }
   };
 
-  const getPreviewUrl = (data: StructuredData) => {
+  const getPreviewUrl = (data) => {
     if (data.entityType === 'app') {
       const app = appsList.find(app => app._id === data.entityId);
       return app ? `/app/${app.slug}` : '#';

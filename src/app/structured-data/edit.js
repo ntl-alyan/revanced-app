@@ -49,20 +49,20 @@ const formSchema = insertStructuredDataSchema.extend({
 });
 
 export default function EditStructuredDataPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isEditing = id !== "new" && id !== undefined;
   const [jsonValid, setJsonValid] = useState<boolean | null>(null);
 
   // Fetch structured data if editing
-  const { data: structuredData, isLoading: isLoadingData } = useQuery<StructuredData>({
+  const { data: structuredData, isLoading: isLoadingData } = useQuery({
     queryKey: ["/api/structured-data", Number(id)],
     enabled: isEditing,
   });
 
   // Form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       entityType: "",
@@ -96,7 +96,7 @@ export default function EditStructuredDataPage() {
   }, [structuredData, form]);
 
   // Validate JSON as user types
-  const validateJson = (json: string) => {
+  const validateJson = (json) => {
     try {
       JSON.parse(json);
       setJsonValid(true);
@@ -109,7 +109,7 @@ export default function EditStructuredDataPage() {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/structured-data", data);
       return await res.json();
     },
@@ -121,7 +121,7 @@ export default function EditStructuredDataPage() {
       });
       setLocation("/admin/structured-data");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to create structured data: ${error.message}`,
@@ -132,7 +132,7 @@ export default function EditStructuredDataPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       if (!isEditing || id === "new") {
         throw new Error("Cannot update a new structured data entry. Use create instead.");
       }
@@ -148,7 +148,7 @@ export default function EditStructuredDataPage() {
       });
       setLocation("/admin/structured-data");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to update structured data: ${error.message}`,
@@ -158,7 +158,7 @@ export default function EditStructuredDataPage() {
   });
 
   // Form submission
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data) => {
     if (!validateJson(data.schemaData)) {
       toast({
         title: "Invalid JSON",

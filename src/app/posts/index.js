@@ -38,11 +38,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-interface Category {
-  _id: string;
-  name: string;
-}
-
 export default function PostsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -50,18 +45,16 @@ export default function PostsPage() {
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const { data: posts, isLoading: postsLoading } = useQuery<Post[]>({
+  const { data: posts, isLoading: postsLoading } = useQuery<({
     queryKey: ["/api/posts"],
   });
 
-  const { data: categories, isLoading: categoriesLoading } = useQuery<
-    Category[]
-  >({
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/categories"],
   });
 
   const deletePostMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id) => {
       await apiRequest("DELETE", `/api/posts/${id}`);
     },
     onSuccess: () => {
@@ -81,7 +74,7 @@ export default function PostsPage() {
     },
   });
 
-  const confirmDelete = (id: string) => {
+  const confirmDelete = (id) => {
     setDeletePostId(id);
   };
 

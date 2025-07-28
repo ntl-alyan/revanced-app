@@ -34,7 +34,6 @@ const extendedCategorySchema = insertCategorySchema.extend({
   slug: z.string().min(2, "Slug must be at least 2 characters"),
 });
 
-type CategoryFormData = z.infer<typeof extendedCategorySchema>;
 
 export default function EditCategoryPage() {
   const { id } = useParams();
@@ -49,7 +48,7 @@ export default function EditCategoryPage() {
     enabled: !isNaN(categoryId),
   });
 
-  const form = useForm<CategoryFormData>({
+  const form = useForm({
     resolver: zodResolver(extendedCategorySchema),
     defaultValues: {
       name: "",
@@ -70,7 +69,7 @@ export default function EditCategoryPage() {
   }, [category, form]);
 
   const updateCategoryMutation = useMutation({
-    mutationFn: async (data: Partial<InsertCategory>) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("PUT", `/api/categories/${categoryId}`, data);
       return res.json();
     },
@@ -93,7 +92,7 @@ export default function EditCategoryPage() {
     },
   });
 
-  const onSubmit = (data: CategoryFormData) => {
+  const onSubmit = (data) => {
     updateCategoryMutation.mutate(data);
   };
 
@@ -128,7 +127,7 @@ export default function EditCategoryPage() {
         <div className="text-center py-10">
           <h2 className="text-xl font-semibold text-red-500 mb-2">Error Loading Category</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {error ? (error as Error).message : "Category not found"}
+            {error ? error.message : "Category not found"}
           </p>
           <Button onClick={() => navigate("/categories")}>
             Return to Categories

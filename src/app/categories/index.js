@@ -35,12 +35,12 @@ export default function CategoriesPage() {
   const [deleteCategoryId, setDeleteCategoryId] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const { data: categories, isLoading } = useQuery<Category[]>({
+  const { data: categories, isLoading } = useQuery({
     queryKey: ["/api/categories"],
   });
 
   const deleteCategoryMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id) => {
       await apiRequest("DELETE", `/api/categories/${id}`);
     },
     onSuccess: () => {
@@ -60,7 +60,7 @@ export default function CategoriesPage() {
     },
   });
 
-  const confirmDelete = (id: number) => {
+  const confirmDelete = (id) => {
     setDeleteCategoryId(id);
   };
 
