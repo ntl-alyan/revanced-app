@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import PublicLayout from "@/components/layout/public-layout";
-import { 
-  Download, 
-  Check, 
-  Package2, 
-  Phone, 
+import {
+  Download,
+  Check,
+  Package2,
+  Phone,
   Search,
   Filter,
   SlidersHorizontal,
-  Info
+  Info,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -41,67 +41,74 @@ export default function DownloadsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name"); // name, date, downloads
   const [categoryFilter, setCategoryFilter] = useState("all"); // all, core, plugins, utilities
-  
+
   // Get all apps
   const { data: apps, isLoading } = useQuery({
     queryKey: ["/api/apps"],
     queryFn: async () => {
-      const response = await fetch('/api/apps');
+      const response = await fetch("/api/apps");
       if (!response.ok) {
-        throw new Error('Failed to fetch apps');
+        throw new Error("Failed to fetch apps");
       }
       return response.json();
-    }
+    },
   });
-  
+
   // Get settings for page title and description
   const { data: settings } = useQuery({
     queryKey: ["/api/settings"],
     queryFn: async () => {
-      const response = await fetch('/api/settings');
+      const response = await fetch("/api/settings");
       if (!response.ok) {
-        throw new Error('Failed to fetch settings');
+        throw new Error("Failed to fetch settings");
       }
       return response.json();
-    }
+    },
   });
-  
-  const downloadsTitle = settings?.find(s => s.settingKey === "downloads_page_title")?.settingValue || "ReVanced Downloads";
-  const downloadsDescription = settings?.find(s => s.settingKey === "downloads_page_description")?.settingValue || 
+
+  const downloadsTitle =
+    settings?.find((s) => s.settingKey === "downloads_page_title")
+      ?.settingValue || "ReVanced Downloads";
+  const downloadsDescription =
+    settings?.find((s) => s.settingKey === "downloads_page_description")
+      ?.settingValue ||
     "Download the latest versions of ReVanced apps to enhance your mobile experience.";
-  
+
   // Categories defined for filtering
   const categories = [
     { id: "all", name: "All Apps" },
     { id: "core", name: "Core Apps" },
     { id: "plugins", name: "Plugins" },
-    { id: "utilities", name: "Utilities" }
+    { id: "utilities", name: "Utilities" },
   ];
-  
+
   // Filter apps based on search query and category
-  let filteredApps = apps?.filter(app => {
-    // Search filter
-    const matchesSearch = 
-      app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (app.description && app.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    // Category filter (you can enhance this logic based on your app data)
-    let matchesCategory = true;
-    if (categoryFilter !== "all") {
-      // This is a placeholder logic - adjust based on how your apps are categorized
-      // For example, you could have a 'category' field in your app data
-      if (categoryFilter === "core") {
-        matchesCategory = app.name.includes("ReVanced");
-      } else if (categoryFilter === "plugins") {
-        matchesCategory = app.name.includes("Plugin");
-      } else if (categoryFilter === "utilities") {
-        matchesCategory = app.name.includes("Utility") || app.name.includes("Tool");
+  let filteredApps =
+    apps?.filter((app) => {
+      // Search filter
+      const matchesSearch =
+        app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (app.description &&
+          app.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      // Category filter (you can enhance this logic based on your app data)
+      let matchesCategory = true;
+      if (categoryFilter !== "all") {
+        // This is a placeholder logic - adjust based on how your apps are categorized
+        // For example, you could have a 'category' field in your app data
+        if (categoryFilter === "core") {
+          matchesCategory = app.name.includes("ReVanced");
+        } else if (categoryFilter === "plugins") {
+          matchesCategory = app.name.includes("Plugin");
+        } else if (categoryFilter === "utilities") {
+          matchesCategory =
+            app.name.includes("Utility") || app.name.includes("Tool");
+        }
       }
-    }
-    
-    return matchesSearch && matchesCategory;
-  }) || [];
-  
+
+      return matchesSearch && matchesCategory;
+    }) || [];
+
   // Sort apps based on selected option
   filteredApps = filteredApps.sort((a, b) => {
     if (sortBy === "name") {
@@ -113,11 +120,13 @@ export default function DownloadsPage() {
     }
     return 0;
   });
-  
+
   // Helper function to get appropriate icon for app
-  const getAppIcon = (app: any) => {
+  const getAppIcon = (app) => {
     if (app.icon) {
-      return <img src={app.icon} alt={`${app.name} icon`} className="h-6 w-6" />;
+      return (
+        <img src={app.icon} alt={`${app.name} icon`} className="h-6 w-6" />
+      );
     } else if (app.name.includes("MicroG")) {
       return <Package2 className="h-6 w-6 text-primary/70" />;
     } else if (app.name.includes("ReVanced")) {
@@ -126,7 +135,7 @@ export default function DownloadsPage() {
       return <Package2 className="h-6 w-6 text-primary/70" />;
     }
   };
-  
+
   return (
     <PublicLayout>
       {/* Hero Section */}
@@ -140,7 +149,7 @@ export default function DownloadsPage() {
           </div>
         </div>
       </div>
-      
+
       <div className="container mx-auto px-4 py-12 -mt-12">
         {/* Search and Filter Bar */}
         <div className="w-full max-w-6xl mx-auto mb-12 bg-background rounded-lg border shadow-sm p-4">
@@ -156,7 +165,7 @@ export default function DownloadsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             {/* Category Filter */}
             <div className="flex items-center md:col-span-4">
               <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -165,7 +174,7 @@ export default function DownloadsPage() {
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -173,7 +182,7 @@ export default function DownloadsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Sort By */}
             <div className="flex items-center md:col-span-3">
               <SlidersHorizontal className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -190,7 +199,7 @@ export default function DownloadsPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Information Card */}
         <div className="w-full max-w-6xl mx-auto mb-10 bg-primary/5 backdrop-blur-sm rounded-lg border border-primary/20 p-6 flex items-start space-x-4">
           <div className="flex-shrink-0 p-2 bg-primary/10 rounded-full">
@@ -199,16 +208,22 @@ export default function DownloadsPage() {
           <div>
             <h3 className="text-lg font-medium mb-2">Download Instructions</h3>
             <p className="text-muted-foreground mb-3">
-              Make sure to install the required applications in the correct order for optimal functioning:
+              Make sure to install the required applications in the correct
+              order for optimal functioning:
             </p>
             <ol className="list-decimal pl-5 text-muted-foreground space-y-1">
-              <li>Install ReVanced MicroG first (required for YouTube ReVanced)</li>
+              <li>
+                Install ReVanced MicroG first (required for YouTube ReVanced)
+              </li>
               <li>Install the app you want to enhance</li>
-              <li>Check the app details page for specific installation instructions</li>
+              <li>
+                Check the app details page for specific installation
+                instructions
+              </li>
             </ol>
           </div>
         </div>
-        
+
         {/* Downloads Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mt-8">
@@ -227,13 +242,20 @@ export default function DownloadsPage() {
         ) : filteredApps.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {filteredApps.map((app) => (
-              <Card key={app.id} className="overflow-hidden border bg-card hover:shadow-md transition-all relative group">
+              <Card
+                key={app.id}
+                className="overflow-hidden border bg-card hover:shadow-md transition-all relative group"
+              >
                 {/* App header with icon */}
                 <div className="p-4 bg-primary/5 border-b border-primary/20 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 rounded-lg bg-background/70 border border-primary/10 flex items-center justify-center overflow-hidden">
                       {app.icon ? (
-                        <img src={app.icon} alt={`${app.name} icon`} className="h-6 w-6" />
+                        <img
+                          src={app.icon}
+                          alt={`${app.name} icon`}
+                          className="h-6 w-6"
+                        />
                       ) : (
                         getAppIcon(app)
                       )}
@@ -241,16 +263,26 @@ export default function DownloadsPage() {
                     <div>
                       <h3 className="font-medium">{app.name}</h3>
                       {app.version && (
-                        <Badge variant="outline" className="text-xs bg-background/50">v{app.version}</Badge>
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-background/50"
+                        >
+                          v{app.version}
+                        </Badge>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Info button */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 rounded-full"
+                          asChild
+                        >
                           <Link to={`/apps/${app.slug}`}>
                             <Info className="h-4 w-4" />
                           </Link>
@@ -262,34 +294,49 @@ export default function DownloadsPage() {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                
+
                 <CardContent className="pt-6">
                   {/* Description */}
                   <p className="text-muted-foreground mb-6 line-clamp-3">
                     {app.description || "No description available."}
                   </p>
-                  
+
                   {/* Feature highlights */}
-                  {app.sections && Array.isArray(app.sections) && app.sections.find(s => s.type === 'features') && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Key Features:</h4>
-                      <ul className="space-y-1">
-                        {app.sections.find(s => s.type === 'features')?.items?.slice(0, 3).map((feature, idx) => (
-                          <li key={idx} className="flex items-start text-sm">
-                            <Check className="h-3.5 w-3.5 text-primary mr-1.5 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-1">{feature.title}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {app.sections &&
+                    Array.isArray(app.sections) &&
+                    app.sections.find((s) => s.type === "features") && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                          Key Features:
+                        </h4>
+                        <ul className="space-y-1">
+                          {app.sections
+                            .find((s) => s.type === "features")
+                            ?.items?.slice(0, 3)
+                            .map((feature, idx) => (
+                              <li
+                                key={idx}
+                                className="flex items-start text-sm"
+                              >
+                                <Check className="h-3.5 w-3.5 text-primary mr-1.5 mt-0.5 flex-shrink-0" />
+                                <span className="line-clamp-1">
+                                  {feature.title}
+                                </span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
                 </CardContent>
-                
+
                 <CardFooter className="pt-0 flex items-center justify-between">
                   {app.downloadId ? (
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <Button className="w-full gap-2 bg-primary hover:bg-primary/90" asChild>
+                        <Button
+                          className="w-full gap-2 bg-primary hover:bg-primary/90"
+                          asChild
+                        >
                           <Link to={`/download/${app.downloadId}`}>
                             <Download className="h-4 w-4" />
                             Download
@@ -299,13 +346,17 @@ export default function DownloadsPage() {
                       <HoverCardContent className="w-80">
                         <div className="flex justify-between space-x-4">
                           <div>
-                            <h4 className="text-sm font-semibold">Download {app.name}</h4>
+                            <h4 className="text-sm font-semibold">
+                              Download {app.name}
+                            </h4>
                             <p className="text-sm text-muted-foreground">
                               Version: {app.version || "Latest"}
                             </p>
                             <div className="flex items-center pt-2">
                               <Phone className="h-4 w-4 text-primary mr-2" />
-                              <span className="text-xs text-muted-foreground">Android application</span>
+                              <span className="text-xs text-muted-foreground">
+                                Android application
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -314,8 +365,15 @@ export default function DownloadsPage() {
                   ) : app.downloadUrl ? (
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <Button className="w-full gap-2 bg-primary hover:bg-primary/90" asChild>
-                          <a href={app.downloadUrl} target="_blank" rel="noopener noreferrer">
+                        <Button
+                          className="w-full gap-2 bg-primary hover:bg-primary/90"
+                          asChild
+                        >
+                          <a
+                            href={app.downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <Download className="h-4 w-4" />
                             Download
                           </a>
@@ -324,13 +382,17 @@ export default function DownloadsPage() {
                       <HoverCardContent className="w-80">
                         <div className="flex justify-between space-x-4">
                           <div>
-                            <h4 className="text-sm font-semibold">Download {app.name}</h4>
+                            <h4 className="text-sm font-semibold">
+                              Download {app.name}
+                            </h4>
                             <p className="text-sm text-muted-foreground">
                               Version: {app.version || "Latest"}
                             </p>
                             <div className="flex items-center pt-2">
                               <Phone className="h-4 w-4 text-primary mr-2" />
-                              <span className="text-xs text-muted-foreground">Android application</span>
+                              <span className="text-xs text-muted-foreground">
+                                Android application
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -351,7 +413,8 @@ export default function DownloadsPage() {
               <Package2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-medium mb-2">No apps found</h3>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                No apps match your search criteria. Try a different search term or check back later for new additions.
+                No apps match your search criteria. Try a different search term
+                or check back later for new additions.
               </p>
               {searchQuery && (
                 <Button onClick={() => setSearchQuery("")} variant="outline">
@@ -361,12 +424,17 @@ export default function DownloadsPage() {
             </div>
           </div>
         )}
-        
+
         {filteredApps.length > 0 && (
           <div className="text-center text-sm text-muted-foreground mt-8 max-w-6xl mx-auto">
-            Showing {filteredApps.length} {filteredApps.length === 1 ? 'app' : 'apps'} 
-            {searchQuery ? ` matching "${searchQuery}"` : ''}
-            {categoryFilter !== 'all' ? ` in category "${categories.find(c => c.id === categoryFilter)?.name}"` : ''}
+            Showing {filteredApps.length}{" "}
+            {filteredApps.length === 1 ? "app" : "apps"}
+            {searchQuery ? ` matching "${searchQuery}"` : ""}
+            {categoryFilter !== "all"
+              ? ` in category "${
+                  categories.find((c) => c.id === categoryFilter)?.name
+                }"`
+              : ""}
           </div>
         )}
       </div>

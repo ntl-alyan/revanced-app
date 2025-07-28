@@ -37,30 +37,30 @@ import {
 import { Helmet } from "react-helmet";
 import { useCallback, useEffect } from "react";
 
-interface Section {
-  type: string;
-  title?: string;
-  content?: string;
-  subtitle?: string;
-  items?: Array<{
-    title?: string;
-    content?: string;
-    icon?: string;
-  }>;
-}
+// interface Section {
+//   type: string;
+//   title?: string;
+//   content?: string;
+//   subtitle?: string;
+//   items?: Array<{
+//     title?: string;
+//     content?: string;
+//     icon?: string;
+//   }>;
+// }
 
-interface App {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string;
-  version?: string;
-  downloadUrl?: string;
-  downloadId?: string;
-  featuredImage?: string;
-  icon?: string;
-  isActive: boolean;
-}
+// interface App {
+//   id: number;
+//   name: string;
+//   slug: string;
+//   description?: string;
+//   version?: string;
+//   downloadUrl?: string;
+//   downloadId?: string;
+//   featuredImage?: string;
+//   icon?: string;
+//   isActive: boolean;
+// }
 
 export default function PublicHomePage() {
   // Get default homepage data
@@ -98,19 +98,19 @@ export default function PublicHomePage() {
       return response.json();
     },
   });
-  
-  const convertToCamelCase = (key: string): string => {
+
+  const convertToCamelCase = (key) => {
     // Special cases first
-    if (key === 'header_scripts') return 'headerScripts';
-    if (key === 'footer_scripts') return 'footerScripts';
-    
+    if (key === "header_scripts") return "headerScripts";
+    if (key === "footer_scripts") return "footerScripts";
+
     // General rule: convert snake_case to camelCase
     return key.replace(/_([a-z])/g, (match, p1) => p1.toUpperCase());
   };
 
   // Helper function to get setting value
   const getSetting = useCallback(
-    (key: string): string | undefined => {
+    (key) => {
       const camelKey = convertToCamelCase(key);
       const setting = settings?.find((s) => s.settingKey === camelKey);
       return setting?.settingValue;
@@ -119,17 +119,13 @@ export default function PublicHomePage() {
   );
 
   // Use homepage sections directly
-  const sections: Section[] = homepage?.sections || [];
+  const sections = homepage?.sections || [];
 
   // Find hero section
   const heroSection = sections.find((section) => section.type === "hero");
 
   // Helper function to get icon component based on name or index
-  const getIconByNameOrIndex = (
-    name?: string,
-    index: number = 0,
-    className: string = "h-5 w-5"
-  ) => {
+  const getIconByNameOrIndex = (name, index = 0, className = "h-5 w-5") => {
     if (name?.toLowerCase()) {
       switch (name.toLowerCase()) {
         case "check":
@@ -199,11 +195,9 @@ export default function PublicHomePage() {
   };
 
   // Extract SEO metadata from homepage data
-  const getMetaValue = (field: string, defaultValue: string = ""): string => {
-    if (homepage && homepage[field as keyof typeof homepage]) {
-      return (
-        (homepage[field as keyof typeof homepage] as string) || defaultValue
-      );
+  const getMetaValue = (field, defaultValue = "") => {
+    if (homepage && homepage[field]) {
+      return homepage[field] || defaultValue;
     }
     return defaultValue;
   };

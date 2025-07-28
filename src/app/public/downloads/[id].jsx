@@ -9,56 +9,60 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export default function AppDownloadPage() {
   const params = useParams();
   const downloadId = params.id;
-  const [app, setApp] = useState<any>(null);
+  const [app, setApp] = useState(null);
 
   // Fetch app by download ID instead of slug
-  const { data: apps, isLoading, error } = useQuery({
+  const {
+    data: apps,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["/api/apps"],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
-  
+
   useEffect(() => {
     if (apps && downloadId) {
       // Find the app with matching downloadId
-      const foundApp = apps.find((a: any) => a.downloadId === downloadId);
+      const foundApp = apps.find((a) => a.downloadId === downloadId);
       setApp(foundApp || null);
     }
   }, [apps, downloadId]);
 
   // Helper to format file size
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes) => {
     if (!bytes) return "Unknown size";
     const units = ["B", "KB", "MB", "GB"];
     let size = bytes;
     let unitIndex = 0;
-    
+
     while (size >= 1024 && unitIndex < units.length - 1) {
       size /= 1024;
       unitIndex++;
     }
-    
+
     return `${size.toFixed(1)} ${units[unitIndex]}`;
   };
 
   // Calculate the time to download at different speeds
-  const estimateDownloadTime = (fileSizeBytes: number) => {
+  const estimateDownloadTime = (fileSizeBytes) => {
     if (!fileSizeBytes) return null;
-    
+
     const speeds = [
       { speed: 1, label: "1 Mbps" },
       { speed: 5, label: "5 Mbps" },
       { speed: 10, label: "10 Mbps" },
       { speed: 50, label: "50 Mbps" },
-      { speed: 100, label: "100 Mbps" }
+      { speed: 100, label: "100 Mbps" },
     ];
-    
+
     // Convert file size to megabits
-    const fileSizeMb = fileSizeBytes * 8 / 1024 / 1024;
-    
+    const fileSizeMb = (fileSizeBytes * 8) / 1024 / 1024;
+
     return speeds.map(({ speed, label }) => {
       // Calculate time in seconds
       const timeInSeconds = fileSizeMb / speed;
-      
+
       // Format time
       if (timeInSeconds < 60) {
         return { label, time: `${Math.ceil(timeInSeconds)} seconds` };
@@ -94,10 +98,11 @@ export default function AppDownloadPage() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Download Not Found</AlertTitle>
             <AlertDescription>
-              The download link you followed is invalid or has expired. Please return to the app page and try again.
+              The download link you followed is invalid or has expired. Please
+              return to the app page and try again.
             </AlertDescription>
           </Alert>
-          
+
           <div className="text-center mt-8">
             <Button variant="outline" onClick={() => window.history.back()}>
               Go Back
@@ -126,20 +131,20 @@ export default function AppDownloadPage() {
           <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
             {app.icon && (
               <div className="bg-background rounded-lg p-4 flex-shrink-0">
-                <img 
-                  src={app.icon} 
-                  alt={`${app.name} icon`} 
+                <img
+                  src={app.icon}
+                  alt={`${app.name} icon`}
                   className="w-20 h-20 object-contain"
                 />
               </div>
             )}
-            
+
             <div className="flex-grow">
               <h2 className="text-xl font-semibold mb-2">{app.name}</h2>
               <p className="mb-4 text-muted-foreground">
                 {app.description || "No description available"}
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <div className="text-sm">
                   <span className="text-muted-foreground">Version: </span>
@@ -147,20 +152,22 @@ export default function AppDownloadPage() {
                 </div>
                 <div className="text-sm">
                   <span className="text-muted-foreground">File size: </span>
-                  <span className="font-medium">{formatFileSize(fileSize)}</span>
+                  <span className="font-medium">
+                    {formatFileSize(fileSize)}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="flex justify-center mt-6">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="gap-2"
-              onClick={() => window.location.href = app.downloadUrl}
+              onClick={() => (window.location.href = app.downloadUrl)}
               disabled={!app.downloadUrl}
             >
-              <Download className="h-5 w-5" /> 
+              <Download className="h-5 w-5" />
               Download Now
             </Button>
           </div>
@@ -170,7 +177,8 @@ export default function AppDownloadPage() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Download Link Unavailable</AlertTitle>
               <AlertDescription>
-                The download link for this app is not available at the moment. Please check back later.
+                The download link for this app is not available at the moment.
+                Please check back later.
               </AlertDescription>
             </Alert>
           )}
@@ -179,7 +187,9 @@ export default function AppDownloadPage() {
         {/* Download time estimates */}
         {downloadTimes && (
           <div className="bg-card border rounded-lg p-6 mb-8 text-card-foreground">
-            <h3 className="text-lg font-medium mb-4">Estimated Download Times</h3>
+            <h3 className="text-lg font-medium mb-4">
+              Estimated Download Times
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {downloadTimes.map((item, index) => (
                 <div key={index} className="p-3 bg-muted/40 rounded-md">
@@ -195,21 +205,26 @@ export default function AppDownloadPage() {
         {app.sections && app.sections.length > 0 && (
           <div className="bg-card border rounded-lg p-6 mb-8 text-card-foreground">
             <h3 className="text-lg font-medium mb-4">Download Information</h3>
-            
+
             {app.sections
-              .filter((s: any) => s.type === 'downloads')
-              .map((section: any, index: number) => (
+              .filter((s) => s.type === "downloads")
+              .map((section, index) => (
                 <div key={index} className="space-y-4">
                   {section.content && (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                      <div
+                        dangerouslySetInnerHTML={{ __html: section.content }}
+                      />
                     </div>
                   )}
-                  
+
                   {section.items && section.items.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                      {section.items.map((item: any, itemIndex: number) => (
-                        <div key={itemIndex} className="flex gap-3 p-3 border rounded-md">
+                      {section.items.map((item, itemIndex) => (
+                        <div
+                          key={itemIndex}
+                          className="flex gap-3 p-3 border rounded-md"
+                        >
                           {item.icon && (
                             <div className="text-primary">
                               {/* Render custom icon here */}
@@ -217,7 +232,11 @@ export default function AppDownloadPage() {
                           )}
                           <div>
                             <div className="font-medium">{item.title}</div>
-                            {item.content && <div className="text-sm text-muted-foreground">{item.content}</div>}
+                            {item.content && (
+                              <div className="text-sm text-muted-foreground">
+                                {item.content}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -227,9 +246,12 @@ export default function AppDownloadPage() {
               ))}
           </div>
         )}
-        
+
         <div className="text-center mt-8">
-          <Button variant="outline" onClick={() => window.location.href = `/apps/${app.slug}`}>
+          <Button
+            variant="outline"
+            onClick={() => (window.location.href = `/apps/${app.slug}`)}
+          >
             Back to App Details
           </Button>
         </div>

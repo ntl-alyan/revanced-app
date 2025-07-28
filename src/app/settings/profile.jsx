@@ -2,8 +2,22 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Helmet } from "react-helmet";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -17,41 +31,51 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import md5 from "md5";
 
 // Form schema for user profile
-const profileFormSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().optional().refine(val => !val || val.length >= 6, {
-    message: "Password must be at least 6 characters long if provided"
-  }),
-  confirmPassword: z.string().optional()
-}).refine(data => {
-  if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+const profileFormSchema = z
+  .object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .optional()
+      .refine((val) => !val || val.length >= 6, {
+        message: "Password must be at least 6 characters long if provided",
+      }),
+    confirmPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (
+        data.password &&
+        data.confirmPassword &&
+        data.password !== data.confirmPassword
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    }
+  );
 
 export default function ProfileSettings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [gravatarUrl, setGravatarUrl] = useState<string>("");
+  const [gravatarUrl, setGravatarUrl] = useState("");
 
-  const form = useForm<ProfileFormValues>({
+  const form = useForm({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       email: user?.email || "",
       password: "",
-      confirmPassword: ""
-    }
+      confirmPassword: "",
+    },
   });
 
   useEffect(() => {
@@ -61,28 +85,34 @@ export default function ProfileSettings() {
         lastName: user.lastName || "",
         email: user.email || "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
-      
+
       // Update Gravatar URL when email changes
       if (user.email) {
         const emailHash = md5(user.email.trim().toLowerCase());
-        setGravatarUrl(`https://www.gravatar.com/avatar/${emailHash}?d=mp&s=200`);
+        setGravatarUrl(
+          `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=200`
+        );
       }
     }
   }, [user, form]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: ProfileFormValues) => {
+    mutationFn: async (data) => {
       // Remove confirm password before sending to API
       const { confirmPassword, ...updateData } = data;
-      
+
       // Only include password if provided
       if (!updateData.password) {
         delete updateData.password;
       }
-      
-      const response = await apiRequest("PUT", `/api/users/${user?.id}`, updateData);
+
+      const response = await apiRequest(
+        "PUT",
+        `/api/users/${user?.id}`,
+        updateData
+      );
       return await response.json();
     },
     onSuccess: () => {
@@ -95,13 +125,14 @@ export default function ProfileSettings() {
     onError: (error) => {
       toast({
         title: "Error updating profile",
-        description: error.message || "Failed to update profile. Please try again.",
+        description:
+          error.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  const onSubmit = (data: ProfileFormValues) => {
+  const onSubmit = (data) => {
     updateProfileMutation.mutate(data);
   };
 
@@ -143,21 +174,26 @@ export default function ProfileSettings() {
               </Avatar>
               <h3 className="text-lg font-medium">{user.username}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {user.firstName && user.lastName 
-                  ? `${user.firstName} ${user.lastName}` 
+                {user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
                   : "No name set"}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{user.email}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Role: {user.role}</p>
-              
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {user.email}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Role: {user.role}
+              </p>
+
               <div className="mt-4">
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400 mb-2">
-                  Profile picture is provided by Gravatar based on your email address
+                  Profile picture is provided by Gravatar based on your email
+                  address
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <a 
-                    href="https://gravatar.com" 
-                    target="_blank" 
+                  <a
+                    href="https://gravatar.com"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs"
                   >
@@ -172,7 +208,10 @@ export default function ProfileSettings() {
         <div className="md:col-span-2">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -210,7 +249,11 @@ export default function ProfileSettings() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} type="email" placeholder="Your email address" />
+                        <Input
+                          {...field}
+                          type="email"
+                          placeholder="Your email address"
+                        />
                       </FormControl>
                       <FormDescription>
                         Your email is used for Gravatar and notifications
@@ -222,7 +265,7 @@ export default function ProfileSettings() {
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                   <h3 className="text-md font-medium mb-4">Change Password</h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -231,7 +274,11 @@ export default function ProfileSettings() {
                         <FormItem>
                           <FormLabel>New Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type="password" placeholder="Leave blank to keep current" />
+                            <Input
+                              {...field}
+                              type="password"
+                              placeholder="Leave blank to keep current"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -245,7 +292,11 @@ export default function ProfileSettings() {
                         <FormItem>
                           <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
-                            <Input {...field} type="password" placeholder="Confirm new password" />
+                            <Input
+                              {...field}
+                              type="password"
+                              placeholder="Confirm new password"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -255,8 +306,8 @@ export default function ProfileSettings() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={updateProfileMutation.isPending}
                   >
                     {updateProfileMutation.isPending ? (

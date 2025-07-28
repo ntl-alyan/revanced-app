@@ -4,22 +4,22 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { PageHeader } from "@/components/layout/page-header";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
   FormMessage,
-  FormDescription
+  FormDescription,
 } from "@/components/ui/form";
-import { 
-  Card, 
-  CardContent, 
+import {
+  Card,
+  CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,15 +32,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Setting } from "@shared/schema";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
-  Switch,
-} from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Define the schema for site settings
@@ -56,7 +49,10 @@ const siteSettingsSchema = z.object({
   posts_per_page: z.string().regex(/^\d+$/, "Must be a number"),
   disable_comments: z.boolean(),
   default_category: z.string(),
-  contact_email: z.string().email("Please enter a valid email").or(z.string().length(0)),
+  contact_email: z
+    .string()
+    .email("Please enter a valid email")
+    .or(z.string().length(0)),
   social_twitter: z.string(),
   social_facebook: z.string(),
   social_instagram: z.string(),
@@ -82,17 +78,15 @@ const siteSettingsSchema = z.object({
   twitter_image: z.string(),
 });
 
-type SiteSettingsFormValues = z.infer<typeof siteSettingsSchema>;
-
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: settings, isLoading } = useQuery<Setting[]>({
+  const { data: settings, isLoading } = useQuery({
     queryKey: ["/api/settings"],
   });
 
-  const form = useForm<SiteSettingsFormValues>({
+  const form = useForm({
     resolver: zodResolver(siteSettingsSchema),
     defaultValues: {
       site_title: "",
@@ -136,46 +130,50 @@ export default function SettingsPage() {
   // Populate form with settings data once loaded
   useEffect(() => {
     if (settings) {
-      const formValues: Partial<SiteSettingsFormValues> = {};
-      
-      settings.forEach(setting => {
+      const formValues = {};
+
+      settings.forEach((setting) => {
         // Convert camelCase to snake_case for form field mapping
         // Example: 'siteTitle' becomes 'site_title'
-        let formKey = setting.settingKey.replace(/([A-Z])/g, '_$1').toLowerCase();
-        
+        let formKey = setting.settingKey
+          .replace(/([A-Z])/g, "_$1")
+          .toLowerCase();
+
         // Special case for headerScripts/footerScripts to avoid extra underscore
-        if (formKey === '_header_scripts') formKey = 'header_scripts';
-        if (formKey === '_footer_scripts') formKey = 'footer_scripts';
-        
+        if (formKey === "_header_scripts") formKey = "header_scripts";
+        if (formKey === "_footer_scripts") formKey = "footer_scripts";
+
         // console.log(`Mapping setting key ${setting.settingKey} to form field ${formKey}`);
-        
-        if (formKey === 'disable_comments') {
-          formValues[formKey as keyof SiteSettingsFormValues] = setting.settingValue === "true";
+
+        if (formKey === "disable_comments") {
+          formValues[formKey] = setting.settingValue === "true";
         } else if (formKey in form.getValues()) {
-          (formValues as any)[formKey] = setting.settingValue || "";
+          formValues[formKey] = setting.settingValue || "";
         }
       });
-      
+
       form.reset({ ...form.getValues(), ...formValues });
     }
   }, [settings, form]);
 
   const updateSettingMutation = useMutation({
-    mutationFn: async (settingsToUpdate: { key: string; value: string }[]) => {
+    mutationFn: async (settingsToUpdate) => {
       const results = [];
-      
+
       // console.log("Settings mutation starting with settings:", settingsToUpdate);
-      
+
       for (const { key, value } of settingsToUpdate) {
         const existingSetting = settings?.find((s) => s.settingKey === key);
-        
+
         // console.log(`Processing setting: ${key}, value: ${value}, exists: ${!!existingSetting}`);
-        
+
         try {
           if (existingSetting) {
             // Update existing setting
             // console.log(`Updating existing setting: ${key}`);
-            const res = await apiRequest("PUT", `/api/settings/${key}`, { settingValue: value });
+            const res = await apiRequest("PUT", `/api/settings/${key}`, {
+              settingValue: value,
+            });
             const result = await res.json();
             // console.log(`Update result for ${key}:`, result);
             results.push(result);
@@ -185,7 +183,7 @@ export default function SettingsPage() {
             const res = await apiRequest("POST", `/api/settings`, {
               settingKey: key,
               settingValue: value,
-              settingType: typeof value === 'boolean' ? 'boolean' : 'string'
+              settingType: typeof value === "boolean" ? "boolean" : "string",
             });
             const result = await res.json();
             // console.log(`Create result for ${key}:`, result);
@@ -196,14 +194,14 @@ export default function SettingsPage() {
           throw error;
         }
       }
-      
+
       // console.log("Settings mutation completed successfully");
       return results;
     },
     onSuccess: () => {
       // Invalidate queries and show success toast
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      
+
       toast({
         title: "Settings saved",
         description: "Your settings have been updated successfully",
@@ -218,31 +216,31 @@ export default function SettingsPage() {
     },
   });
 
-  const onSubmit = async (data: SiteSettingsFormValues) => {
+  const onSubmit = async (data) => {
     try {
       // console.log("Form submitted with data:", data);
-      
+
       // Convert snake_case form fields back to camelCase for storage
-      const convertToCamelCase = (key: string): string => {
+      const convertToCamelCase = (key) => {
         // Special cases first
-        if (key === 'header_scripts') return 'headerScripts';
-        if (key === 'footer_scripts') return 'footerScripts';
-        
+        if (key === "header_scripts") return "headerScripts";
+        if (key === "footer_scripts") return "footerScripts";
+
         // General rule: convert snake_case to camelCase
         return key.replace(/_([a-z])/g, (match, p1) => p1.toUpperCase());
       };
-      
+
       // Flatten object into key-value pairs with proper casing
       const settingsToUpdate = Object.entries(data).map(([key, value]) => ({
         key: convertToCamelCase(key),
-        value: typeof value === 'boolean' ? String(value) : value
+        value: typeof value === "boolean" ? String(value) : value,
       }));
-      
+
       // console.log("Settings to update:", settingsToUpdate);
-      
+
       // Update all settings in one mutation
       updateSettingMutation.mutate(settingsToUpdate);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error in onSubmit:", error);
       toast({
         title: "Error",
@@ -260,14 +258,15 @@ export default function SettingsPage() {
           <title>Access Denied - ReVanced Admin Panel</title>
         </Helmet>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <h3 className="text-lg font-medium text-red-600 mb-2">Access Denied</h3>
+          <h3 className="text-lg font-medium text-red-600 mb-2">
+            Access Denied
+          </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            You do not have permission to view this page. Only administrators can manage settings.
+            You do not have permission to view this page. Only administrators
+            can manage settings.
           </p>
           <Button asChild>
-            <a href="/">
-              Return to Dashboard
-            </a>
+            <a href="/">Return to Dashboard</a>
           </Button>
         </div>
       </MainLayout>
@@ -335,7 +334,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="site_description"
@@ -343,9 +342,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Site Description</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="A brief description of your website" 
-                                {...field} 
+                              <Textarea
+                                placeholder="A brief description of your website"
+                                {...field}
                                 rows={3}
                               />
                             </FormControl>
@@ -356,7 +355,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="site_keywords"
@@ -364,9 +363,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Meta Keywords</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="blog, technology, news" 
-                                {...field} 
+                              <Input
+                                placeholder="blog, technology, news"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -376,7 +375,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="site_author"
@@ -384,10 +383,7 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Site Author</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="John Doe" 
-                                {...field} 
-                              />
+                              <Input placeholder="John Doe" {...field} />
                             </FormControl>
                             <FormDescription>
                               The name of the site author or organization
@@ -416,19 +412,20 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Site Logo URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="/uploads/logo.webp" 
-                                {...field} 
+                              <Input
+                                placeholder="/uploads/logo.webp"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
-                              The URL to your site logo (upload via Media section first)
+                              The URL to your site logo (upload via Media
+                              section first)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="site_favicon"
@@ -436,9 +433,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Favicon URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="/uploads/favicon.webp" 
-                                {...field} 
+                              <Input
+                                placeholder="/uploads/favicon.webp"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -448,7 +445,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="homepage_logo"
@@ -456,9 +453,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Homepage Logo URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="/uploads/homepage-logo.webp" 
-                                {...field} 
+                              <Input
+                                placeholder="/uploads/homepage-logo.webp"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -468,7 +465,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="revanced_logo"
@@ -476,13 +473,14 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>ReVanced Front Logo URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="/uploads/revanced-logo.webp" 
-                                {...field} 
+                              <Input
+                                placeholder="/uploads/revanced-logo.webp"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
-                              The URL to your ReVanced front logo (used on public pages)
+                              The URL to your ReVanced front logo (used on
+                              public pages)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -508,11 +506,11 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Posts Per Page</FormLabel>
                             <FormControl>
-                              <Input 
-                                type="number" 
-                                min="1" 
-                                max="50" 
-                                {...field} 
+                              <Input
+                                type="number"
+                                min="1"
+                                max="50"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -522,16 +520,19 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="disable_comments"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base">Disable Comments</FormLabel>
+                              <FormLabel className="text-base">
+                                Disable Comments
+                              </FormLabel>
                               <FormDescription>
-                                Turn off commenting functionality across the site
+                                Turn off commenting functionality across the
+                                site
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -543,7 +544,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="default_category"
@@ -551,10 +552,7 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Default Category</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="Uncategorized" 
-                                {...field} 
-                              />
+                              <Input placeholder="Uncategorized" {...field} />
                             </FormControl>
                             <FormDescription>
                               Default category name for new posts
@@ -583,10 +581,10 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Contact Email</FormLabel>
                             <FormControl>
-                              <Input 
-                                type="email" 
-                                placeholder="contact@example.com" 
-                                {...field} 
+                              <Input
+                                type="email"
+                                placeholder="contact@example.com"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -596,7 +594,7 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="social_twitter"
@@ -604,16 +602,16 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Twitter/X URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://twitter.com/yourusername" 
-                                {...field} 
+                              <Input
+                                placeholder="https://twitter.com/yourusername"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="social_facebook"
@@ -621,16 +619,16 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Facebook URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://facebook.com/yourpage" 
-                                {...field} 
+                              <Input
+                                placeholder="https://facebook.com/yourpage"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="social_instagram"
@@ -638,16 +636,16 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Instagram URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://instagram.com/yourusername" 
-                                {...field} 
+                              <Input
+                                placeholder="https://instagram.com/yourusername"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="social_linkedin"
@@ -655,9 +653,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>LinkedIn URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://linkedin.com/in/yourusername" 
-                                {...field} 
+                              <Input
+                                placeholder="https://linkedin.com/in/yourusername"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -672,9 +670,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>GitHub URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://github.com/yourusername" 
-                                {...field} 
+                              <Input
+                                placeholder="https://github.com/yourusername"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -689,9 +687,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Discord URL</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="https://discord.gg/yourinvite" 
-                                {...field} 
+                              <Input
+                                placeholder="https://discord.gg/yourinvite"
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -721,16 +719,29 @@ export default function SettingsPage() {
                             SEO Settings Location
                           </h3>
                           <p className="text-blue-600 dark:text-blue-400 mb-4">
-                            SEO settings are managed directly in their respective modules:
+                            SEO settings are managed directly in their
+                            respective modules:
                           </p>
                           <ul className="list-disc list-inside space-y-2 text-blue-600 dark:text-blue-400">
-                            <li><strong>Homepage SEO:</strong> Managed in the "Homepage" module, in the SEO tab</li>
-                            <li><strong>App SEO:</strong> Managed in each app's edit page, in the SEO tab</li>
-                            <li><strong>Post SEO:</strong> Managed in each post's edit page, in the SEO tab</li>
-                            <li><strong>Page SEO:</strong> Managed in each page's edit page, in the SEO tab</li>
+                            <li>
+                              <strong>Homepage SEO:</strong> Managed in the
+                              "Homepage" module, in the SEO tab
+                            </li>
+                            <li>
+                              <strong>App SEO:</strong> Managed in each app's
+                              edit page, in the SEO tab
+                            </li>
+                            <li>
+                              <strong>Post SEO:</strong> Managed in each post's
+                              edit page, in the SEO tab
+                            </li>
+                            <li>
+                              <strong>Page SEO:</strong> Managed in each page's
+                              edit page, in the SEO tab
+                            </li>
                           </ul>
                         </div>
-                        
+
                         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
                           <h3 className="text-lg font-medium flex items-center mb-2 text-amber-700 dark:text-amber-300">
                             <Share2 className="mr-2 h-5 w-5" />
@@ -738,10 +749,21 @@ export default function SettingsPage() {
                           </h3>
                           <ul className="list-disc list-inside space-y-2 text-amber-600 dark:text-amber-400">
                             <li>Keep meta titles between 50-60 characters</li>
-                            <li>Keep meta descriptions between 150-160 characters</li>
-                            <li>Use unique meta titles and descriptions for each page</li>
-                            <li>Include relevant keywords naturally in titles and descriptions</li>
-                            <li>Use high-quality images for social media sharing (1200x630px recommended)</li>
+                            <li>
+                              Keep meta descriptions between 150-160 characters
+                            </li>
+                            <li>
+                              Use unique meta titles and descriptions for each
+                              page
+                            </li>
+                            <li>
+                              Include relevant keywords naturally in titles and
+                              descriptions
+                            </li>
+                            <li>
+                              Use high-quality images for social media sharing
+                              (1200x630px recommended)
+                            </li>
                           </ul>
                         </div>
                       </div>
@@ -765,9 +787,9 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Google Analytics ID</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="G-XXXXXXXXXX or UA-XXXXXXXX-X" 
-                                {...field} 
+                              <Input
+                                placeholder="G-XXXXXXXXXX or UA-XXXXXXXX-X"
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -777,16 +799,16 @@ export default function SettingsPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <Separator className="my-4" />
-                      
+
                       <div className="space-y-2">
                         <h3 className="text-lg font-medium">Custom Scripts</h3>
                         <p className="text-sm text-muted-foreground">
                           Add custom scripts to your website's header and footer
                         </p>
                       </div>
-                      
+
                       <FormField
                         control={form.control}
                         name="header_scripts"
@@ -794,21 +816,22 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Header Scripts</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="<!-- Your custom header scripts here -->" 
-                                {...field} 
+                              <Textarea
+                                placeholder="<!-- Your custom header scripts here -->"
+                                {...field}
                                 rows={5}
                                 className="font-mono text-xs"
                               />
                             </FormControl>
                             <FormDescription>
-                              Scripts to include in the &lt;head&gt; section of your website (analytics, meta tags, etc.)
+                              Scripts to include in the &lt;head&gt; section of
+                              your website (analytics, meta tags, etc.)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="footer_scripts"
@@ -816,15 +839,17 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Footer Scripts</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="<!-- Your custom footer scripts here -->" 
-                                {...field} 
+                              <Textarea
+                                placeholder="<!-- Your custom footer scripts here -->"
+                                {...field}
                                 rows={5}
                                 className="font-mono text-xs"
                               />
                             </FormControl>
                             <FormDescription>
-                              Scripts to include before the closing &lt;/body&gt; tag (chat widgets, conversion tracking, etc.)
+                              Scripts to include before the closing
+                              &lt;/body&gt; tag (chat widgets, conversion
+                              tracking, etc.)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -837,8 +862,8 @@ export default function SettingsPage() {
             )}
 
             <div className="mt-6 flex justify-end">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isLoading || updateSettingMutation.isPending}
               >
                 {updateSettingMutation.isPending ? (

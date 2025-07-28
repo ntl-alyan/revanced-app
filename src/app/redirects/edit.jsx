@@ -36,19 +36,19 @@ const formSchema = insertRedirectSchema.extend({
 });
 
 export default function EditRedirectPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isEditing = id !== "new" && id !== undefined;
 
   // Fetch redirect if editing
-  const { data: redirect, isLoading: isLoadingRedirect } = useQuery<Redirect>({
+  const { data: redirect, isLoading: isLoadingRedirect } = useQuery({
     queryKey: ["/api/redirects", Number(id)],
     enabled: isEditing,
   });
 
   // Form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       sourceUrl: "",
@@ -74,7 +74,7 @@ export default function EditRedirectPage() {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/redirects", data);
       return await res.json();
     },
@@ -86,7 +86,7 @@ export default function EditRedirectPage() {
       });
       setLocation("/admin/redirects");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to create redirect: ${error.message}`,
@@ -97,7 +97,7 @@ export default function EditRedirectPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       if (!isEditing || id === "new") {
         throw new Error("Cannot update a new redirect. Use create instead.");
       }
@@ -106,14 +106,16 @@ export default function EditRedirectPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/redirects", Number(id)] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/redirects", Number(id)],
+      });
       toast({
         title: "Redirect updated",
         description: "The redirect has been updated successfully.",
       });
       setLocation("/admin/redirects");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to update redirect: ${error.message}`,
@@ -123,7 +125,7 @@ export default function EditRedirectPage() {
   });
 
   // Form submission
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data) => {
     if (isEditing) {
       updateMutation.mutate(data);
     } else {
@@ -143,7 +145,10 @@ export default function EditRedirectPage() {
             : "Create a new URL redirect to maintain SEO."
         }
       >
-        <Button variant="outline" onClick={() => setLocation("/admin/redirects")}>
+        <Button
+          variant="outline"
+          onClick={() => setLocation("/admin/redirects")}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Redirects
         </Button>
       </DashboardHeader>
@@ -169,8 +174,8 @@ export default function EditRedirectPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      The original URL path that will be redirected. Use /go/ prefix
-                      for tracking external links.
+                      The original URL path that will be redirected. Use /go/
+                      prefix for tracking external links.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -205,7 +210,9 @@ export default function EditRedirectPage() {
                     <FormItem>
                       <FormLabel>HTTP Status Code</FormLabel>
                       <Select
-                        onValueChange={(value) => field.onChange(parseInt(value))}
+                        onValueChange={(value) =>
+                          field.onChange(parseInt(value))
+                        }
                         value={String(field.value || 301)}
                       >
                         <FormControl>
@@ -214,10 +221,18 @@ export default function EditRedirectPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="301">301 (Moved Permanently)</SelectItem>
-                          <SelectItem value="302">302 (Found/Temporary)</SelectItem>
-                          <SelectItem value="307">307 (Temporary Redirect)</SelectItem>
-                          <SelectItem value="308">308 (Permanent Redirect)</SelectItem>
+                          <SelectItem value="301">
+                            301 (Moved Permanently)
+                          </SelectItem>
+                          <SelectItem value="302">
+                            302 (Found/Temporary)
+                          </SelectItem>
+                          <SelectItem value="307">
+                            307 (Temporary Redirect)
+                          </SelectItem>
+                          <SelectItem value="308">
+                            308 (Permanent Redirect)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
@@ -242,7 +257,8 @@ export default function EditRedirectPage() {
                       <div className="space-y-1 leading-none">
                         <FormLabel>Permanent Redirect</FormLabel>
                         <FormDescription>
-                          Indicates if this is a permanent redirect (recommended for SEO).
+                          Indicates if this is a permanent redirect (recommended
+                          for SEO).
                         </FormDescription>
                       </div>
                     </FormItem>

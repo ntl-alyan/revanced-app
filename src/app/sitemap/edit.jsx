@@ -38,19 +38,19 @@ const formSchema = insertSitemapEntrySchema.extend({
 });
 
 export default function EditSitemapEntryPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isEditing = id !== "new" && id !== undefined;
 
   // Fetch sitemap entry if editing
-  const { data: entry, isLoading: isLoadingEntry } = useQuery<SitemapEntry>({
+  const { data: entry, isLoading: isLoadingEntry } = useQuery({
     queryKey: [`/api/sitemap/${id}`],
     enabled: isEditing,
   });
 
   // Form
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       url: "",
@@ -78,7 +78,7 @@ export default function EditSitemapEntryPage() {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/sitemap", data);
       return await res.json();
     },
@@ -90,7 +90,7 @@ export default function EditSitemapEntryPage() {
       });
       setLocation("/admin/sitemap");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to create sitemap entry: ${error.message}`,
@@ -101,7 +101,7 @@ export default function EditSitemapEntryPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof formSchema>) => {
+    mutationFn: async (data) => {
       if (!isEditing || id === "new") {
         throw new Error(
           "Cannot update a new sitemap entry. Use create instead."
@@ -119,7 +119,7 @@ export default function EditSitemapEntryPage() {
       });
       setLocation("/admin/sitemap");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
         description: `Failed to update sitemap entry: ${error.message}`,
@@ -129,7 +129,7 @@ export default function EditSitemapEntryPage() {
   });
 
   // Form submission
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data) => {
     console.log(data);
     if (isEditing) {
       updateMutation.mutate(data);

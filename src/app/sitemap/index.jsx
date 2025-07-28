@@ -1,7 +1,15 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -26,60 +34,56 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
-import { Redirect } from "@shared/schema";
+import { SitemapEntry } from "@shared/schema";
 
-export default function RedirectsPage() {
+export default function SitemapPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [redirectToDelete, setRedirectToDelete] = useState<number | null>(null);
+  const [entryToDelete, setEntryToDelete] = useState("");
 
-  // Fetch redirects
-  const { data: redirects = [], isLoading } = useQuery<Redirect[]>({
-    queryKey: ["/api/redirects"],
+  // Fetch sitemap entries
+  const { data: entries = [], isLoading } = useQuery({
+    queryKey: ["/api/sitemap"],
     staleTime: 1000 * 60, // 1 minute
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/redirects/${id}`);
+    mutationFn: async (id) => {
+      await apiRequest("DELETE", `/api/sitemap/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sitemap"] });
       toast({
-        title: "Redirect deleted",
-        description: "The redirect has been deleted successfully.",
+        title: "Sitemap entry deleted",
+        description: "The sitemap entry has been deleted successfully.",
       });
-      setRedirectToDelete(null);
+      setEntryToDelete(null);
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to delete redirect: ${error.message}`,
+        description: `Failed to delete sitemap entry: ${error.message}`,
         variant: "destructive",
       });
     },
   });
 
+  // Format date to display only date portion
+  const formatDate = (date) => {
+    return new Date(date).toISOString().split("T")[0];
+  };
+
   // Columns for the table
   const columns = [
     {
-      accessorKey: "sourceUrl",
-      header: "Source URL",
-      cell: ({ row }: any) => (
-        <div className="max-w-[200px] truncate font-medium">
-          {row.original.sourceUrl}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "targetUrl",
-      header: "Target URL",
-      cell: ({ row }: any) => (
+      accessorKey: "url",
+      header: "URL",
+      cell: ({ row }) => (
         <div className="flex items-center space-x-2 max-w-[200px] truncate">
-          <span>{row.original.targetUrl}</span>
+          <span className="font-medium">{row.original.url}</span>
           <a
-            href={row.original.targetUrl}
+            href={row.original.url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-700"
@@ -90,27 +94,29 @@ export default function RedirectsPage() {
       ),
     },
     {
-      accessorKey: "statusCode",
-      header: "Status",
-      cell: ({ row }: any) => (
-        <Badge variant={row.original.statusCode === 301 ? "default" : "secondary"}>
-          {row.original.statusCode}
-        </Badge>
-      ),
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
     },
     {
-      accessorKey: "isPermanent",
-      header: "Type",
-      cell: ({ row }: any) => (
-        <Badge variant={row.original.isPermanent ? "default" : "outline"}>
-          {row.original.isPermanent ? "Permanent" : "Temporary"}
-        </Badge>
-      ),
+      accessorKey: "changeFrequency",
+      header: "Change Frequency",
+      cell: ({ row }) => row.original.changeFrequency,
+    },
+    {
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => row.original.priority,
+    },
+    {
+      accessorKey: "lastModified",
+      header: "Last Modified",
+      cell: ({ row }) => formatDate(row.original.lastModified),
     },
     {
       accessorKey: "isActive",
       header: "Status",
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="flex items-center">
           {row.original.isActive ? (
             <span className="flex items-center text-green-600">
@@ -126,22 +132,27 @@ export default function RedirectsPage() {
     },
     {
       id: "actions",
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation(`/admin/redirects/edit/${row.original.id}`)}
+            onClick={() =>
+              setLocation(`/admin/sitemap/edit/${row.original._id}`)
+            }
           >
             <Edit size={16} />
           </Button>
-          <AlertDialog open={redirectToDelete === row.original.id} onOpenChange={(open) => !open && setRedirectToDelete(null)}>
+          <AlertDialog
+            open={entryToDelete === row.original._id}
+            onOpenChange={(open) => !open && setEntryToDelete(null)}
+          >
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-red-500 hover:text-red-700"
-                onClick={() => setRedirectToDelete(row.original.id)}
+                onClick={() => setEntryToDelete(row.original._id)}
               >
                 <Trash2 size={16} />
               </Button>
@@ -150,7 +161,8 @@ export default function RedirectsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete the redirect. This action cannot be undone.
+                  This will permanently delete the sitemap entry. This action
+                  cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -158,8 +170,8 @@ export default function RedirectsPage() {
                 <AlertDialogAction
                   className="bg-red-500 hover:bg-red-700"
                   onClick={() => {
-                    if (redirectToDelete) {
-                      deleteMutation.mutate(redirectToDelete);
+                    if (entryToDelete) {
+                      deleteMutation.mutate(entryToDelete);
                     }
                   }}
                 >
@@ -176,29 +188,39 @@ export default function RedirectsPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <DashboardHeader
-        heading="URL Redirects"
-        text="Manage URL redirects to maintain SEO when changing URLs on your site."
+        heading="Sitemap Management"
+        text="Manage your website's XML sitemap for better search engine visibility."
       >
-        <Button onClick={() => setLocation("/admin/redirects/new")}>
-          <Plus className="mr-2 h-4 w-4" /> Add Redirect
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => window.open("/sitemap.xml", "_blank")}
+            className="flex items-center"
+          >
+            <FileText className="mr-2 h-4 w-4" /> View XML Sitemap
+          </Button>
+          <Button onClick={() => setLocation("/admin/sitemap/new")}>
+            <Plus className="mr-2 h-4 w-4" /> Add Entry
+          </Button>
+        </div>
       </DashboardHeader>
 
       {isLoading ? (
         <div className="flex justify-center p-8">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
-      ) : redirects.length === 0 ? (
+      ) : entries.length === 0 ? (
         <div className="bg-card rounded-lg p-8 text-center">
-          <h3 className="text-lg font-medium">No redirects found</h3>
+          <h3 className="text-lg font-medium">No sitemap entries found</h3>
           <p className="text-muted-foreground mt-2">
-            Create your first redirect to help maintain SEO when changing URLs.
+            Create your first sitemap entry to improve SEO and search engine
+            visibility.
           </p>
           <Button
             className="mt-4"
-            onClick={() => setLocation("/admin/redirects/new")}
+            onClick={() => setLocation("/admin/sitemap/new")}
           >
-            <Plus className="mr-2 h-4 w-4" /> Add Redirect
+            <Plus className="mr-2 h-4 w-4" /> Add Entry
           </Button>
         </div>
       ) : (
@@ -214,11 +236,11 @@ export default function RedirectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {redirects.map((redirect) => (
-                <TableRow key={redirect.id}>
+              {entries.map((entry) => (
+                <TableRow key={entry.id}>
                   {columns.map((column) => (
                     <TableCell key={column.accessorKey || column.id}>
-                      {column.cell({ row: { original: redirect } })}
+                      {column.cell({ row: { original: entry } })}
                     </TableCell>
                   ))}
                 </TableRow>

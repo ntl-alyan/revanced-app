@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -27,9 +23,29 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/app/users/create.js", "src/app/users/create.js", "src/app/public/apps/[slug].js", "src/app/public/apps/[slug].js", "src/app/users/index.js", "src/app/users/edit.js"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "**/*.tsx",
+    "src/app/users/create.js",
+    "src/app/users/create.js",
+    "src/app/public/apps/[slug].js",
+    "src/app/public/apps/[slug].js",
+    "src/app/users/index.js",
+    "src/app/users/edit.js",
+    "src/app/public/apps/index.jsx",
+    "src/app/public/download/[downloadId].jsx",
+    "src/app/public/download/home/[downloadId].jsx",
+    "src/app/public/downloads/[id].jsx",
+    "src/app/public/pages/[slug].jsx",
+    "src/app/public/posts/category/[slug].jsx",
+    "src/app/public/posts/[slug].jsx",
+    "src/app/public/posts/index.jsx",
+    "src/app/public/downloads.jsx",
+    "src/app/public/index.jsx",
+    "src/app/redirects/edit.jsx",
+    "src/app/redirects/index.jsx",
+    "src/app/settings/index.jsx",
+    "src/app/settings/profile.jsx",
+    "src/app/sitemap/edit.jsx",
+    "src/app/sitemap/index.jsx"
+  ],
+  "exclude": ["node_modules"]
 }
