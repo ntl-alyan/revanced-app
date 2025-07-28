@@ -8,21 +8,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Helmet } from "react-helmet";
 
-interface PublicLayoutProps {
-  children: ReactNode;
-}
 
-interface SettingItem {
-  id: number;
-  settingKey: string;
-  settingValue: string;
-}
-
-export default function PublicLayout({ children }: PublicLayoutProps) {
+export default function PublicLayout({ children }) {
   const isMobile = useIsMobile();
   
   // Get settings
-  const { data: settings } = useQuery<SettingItem[]>({
+  const { data: settings } = useQuery({
     queryKey: ["/api/settings"],
     queryFn: async () => {
       const response = await fetch('/api/settings');
@@ -56,7 +47,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
   
   // Add social links only if they have a value in settings
   // Helper to check and get setting by snake_case key but converting to camelCase for backend lookup
-  const getSocialValue = (key: string): string => {
+  const getSocialValue = (key) => {
     // Convert to camelCase for backend lookup
     const camelKey = key.replace(/_([a-z])/g, (match, p1) => p1.toUpperCase());
     return settings?.find(s => s.settingKey === camelKey)?.settingValue || "";
@@ -93,7 +84,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
   }
 
   // Convert snake_case keys to camelCase for consistency with backend
-  const convertToCamelCase = (key: string): string => {
+  const convertToCamelCase = (key) => {
     // Special cases first
     if (key === 'header_scripts') return 'headerScripts';
     if (key === 'footer_scripts') return 'footerScripts';
@@ -103,7 +94,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
   };
   
   // Extract SEO settings
-  const getSetting = (key: string, defaultValue: string = '') => {
+  const getSetting = (key, defaultValue = '') => {
     const camelKey = convertToCamelCase(key);
     return settings?.find(s => s.settingKey === camelKey)?.settingValue || defaultValue;
   };

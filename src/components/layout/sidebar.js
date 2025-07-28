@@ -20,20 +20,7 @@ import {
 import { useState } from "react";
 import { useTheme } from "@/hooks/use-theme-provider";
 
-type SidebarProps = {
-  className?: string;
-  isMobileOpen: boolean;
-  onCloseMobile: () => void;
-};
-
-type NavItemProps = {
-  icon: React.ReactNode;
-  href: string;
-  label: string;
-  onClick?: () => void;
-};
-
-function NavItem({ icon, href, label, onClick }: NavItemProps) {
+function NavItem({ icon, href, label, onClick }) {
   const [location] = useLocation();
   const isActive = location === href || location.startsWith(`${href}/`);
 
@@ -54,7 +41,7 @@ function NavItem({ icon, href, label, onClick }: NavItemProps) {
   );
 }
 
-export function Sidebar({ className, isMobileOpen, onCloseMobile }: SidebarProps) {
+export function Sidebar({ className, isMobileOpen, onCloseMobile }) {
   const { user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === "dark";

@@ -2,14 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { PlusCircle } from "lucide-react";
 
-type PageHeaderProps = {
-  title: string;
-  description?: string;
-  actionLabel?: string;
-  actionLink?: string;
-  actionIcon?: React.ReactNode;
-  children?: React.ReactNode;
-};
 
 export function PageHeader({ 
   title, 
@@ -18,7 +10,7 @@ export function PageHeader({
   actionLink, 
   actionIcon = <PlusCircle className="mr-2 h-4 w-4" />, 
   children 
-}: PageHeaderProps) {
+}) {
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div>

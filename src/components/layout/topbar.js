@@ -7,11 +7,9 @@ import { useTheme } from "@/hooks/use-theme-provider";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
-type TopbarProps = {
-  onMobileMenuToggle: () => void;
-};
 
-export function Topbar({ onMobileMenuToggle }: TopbarProps) {
+
+export function Topbar({ onMobileMenuToggle }) {
   const { user, logoutMutation } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
@@ -32,12 +30,12 @@ export function Topbar({ onMobileMenuToggle }: TopbarProps) {
   
   // Close menus when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
       }
       
-      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target as Node)) {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
         setNotificationsMenuOpen(false);
       }
     }

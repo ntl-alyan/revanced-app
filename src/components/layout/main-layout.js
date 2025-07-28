@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
 
-export function MainLayout({ children }: MainLayoutProps) {
+
+export function MainLayout({ children }) {
   const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState(false);
 
   const toggleMobileMenu = () => {

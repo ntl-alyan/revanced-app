@@ -1,19 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type StatCardProps = {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  trend?: {
-    value: string | number;
-    isPositive: boolean;
-    text: string;
-  };
-  bgColor?: string;
-  className?: string;
-};
-
-export function StatCard({ title, value, icon, trend, bgColor = "bg-blue-100 dark:bg-blue-900", className }: StatCardProps) {
+export function StatCard({ title, value, icon, trend, bgColor = "bg-blue-100 dark:bg-blue-900", className }) {
   return (
     <div className={cn("bg-white dark:bg-gray-800 rounded-lg shadow p-5 border border-gray-200 dark:border-gray-700", className)}>
       <div className="flex items-center justify-between">

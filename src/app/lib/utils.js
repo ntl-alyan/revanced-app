@@ -1,11 +1,11 @@
-import { clsx, type ClassValue } from "clsx";
+import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -13,7 +13,7 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-export function formatDateTime(date: Date | string): string {
+export function formatDateTime(date) {
   return new Date(date).toLocaleString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -23,12 +23,12 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-export function truncate(str: string, length: number): string {
+export function truncate(str, length) {
   if (str.length <= length) return str;
   return str.slice(0, length) + '...';
 }
 
-export function generateSlug(text: string): string {
+export function generateSlug(text) {
   return text
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
@@ -37,7 +37,7 @@ export function generateSlug(text: string): string {
     .trim();
 }
 
-export function getInitials(name: string): string {
+export function getInitials(name) {
   if (!name) return '';
   
   const parts = name.split(' ');
@@ -48,7 +48,7 @@ export function getInitials(name: string): string {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-export function fileSize(bytes: number): string {
+export function fileSize(bytes) {
   const units = ['B', 'KB', 'MB', 'GB'];
   let size = bytes;
   let unitIndex = 0;

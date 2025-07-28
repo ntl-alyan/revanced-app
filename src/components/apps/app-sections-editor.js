@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
-import { appSectionSchema, appSectionItemSchema } from "@shared/schema";
+import { appSectionSchema } from "@shared/schema";
 import { z } from "zod";
 import { 
   Card, 
@@ -29,23 +29,12 @@ import {
   DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DialogTitle} from "@/components/ui/dialog";
 import {
   MoveUp,
   MoveDown,
   Trash2,
   Plus,
-  MoreVertical,
   AlertCircle,
   BadgeCheck,
   Check,
@@ -67,7 +56,6 @@ import {
   Link,
   Loader,
   Lock,
-  LucideIcon,
   MessageCircle,
   Palette,
   Pencil,
