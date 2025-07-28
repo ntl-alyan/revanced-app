@@ -44,12 +44,12 @@ export default function PagesPage() {
   const [deletePageId, setDeletePageId] = useState(null);
   const { toast } = useToast();
 
-  const { data: pages, isLoading } = useQuery<Page[]>({
+  const { data: pages, isLoading } = useQuery({
     queryKey: ["/api/pages"],
   });
 
   const deletePageMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id) => {
       await apiRequest("DELETE", `/api/pages/${id}`);
     },
     onSuccess: () => {
@@ -69,7 +69,7 @@ export default function PagesPage() {
     },
   });
 
-  const confirmDelete = (id: string) => {
+  const confirmDelete = (id) => {
     setDeletePageId(id);
   };
 

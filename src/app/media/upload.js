@@ -20,16 +20,16 @@ export default function UploadMediaPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
   
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef(null);
 
   const uploadMediaMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file) => {
       setIsUploading(true);
       setUploadProgress(0);
       setError(null);
@@ -95,7 +95,7 @@ export default function UploadMediaPage() {
       // Navigate back to media page
       navigate("/admin/media");
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       setError(error.message);
       setIsUploading(false);
       setUploadProgress(0);
@@ -108,7 +108,7 @@ export default function UploadMediaPage() {
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
@@ -117,7 +117,7 @@ export default function UploadMediaPage() {
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreview(reader.result as string);
+          setPreview(reader.result);
         };
         reader.readAsDataURL(file);
       } else {
@@ -128,11 +128,11 @@ export default function UploadMediaPage() {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e) => {
     e.preventDefault();
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
@@ -151,7 +151,7 @@ export default function UploadMediaPage() {
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreview(reader.result as string);
+          setPreview(reader.result);
         };
         reader.readAsDataURL(file);
       } else {

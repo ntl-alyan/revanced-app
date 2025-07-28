@@ -35,16 +35,16 @@ import {
 
 export default function MediaPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [deleteMediaId, setDeleteMediaId] = useState<number | null>(null);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [deleteMediaId, setDeleteMediaId] = useState(null);
   const { toast } = useToast();
 
-  const { data: mediaItems, isLoading } = useQuery<Media[]>({
+  const { data: mediaItems, isLoading } = useQuery({
     queryKey: ["/api/media"],
   });
 
   const deleteMediaMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id) => {
       await apiRequest("DELETE", `/api/media/${id}`);
     },
     onSuccess: () => {
@@ -64,7 +64,7 @@ export default function MediaPage() {
     },
   });
 
-  const confirmDelete = (id: number) => {
+  const confirmDelete = (id) => {
     setDeleteMediaId(id);
   };
 
@@ -80,7 +80,7 @@ export default function MediaPage() {
   };
 
   // Get file type icon based on mimetype
-  const getFileIcon = (fileType: string) => {
+  const getFileIcon = (fileType) => {
     if (fileType.startsWith("image/")) {
       return <Image className="h-8 w-8 text-blue-500" />;
     } else if (fileType.startsWith("video/")) {
