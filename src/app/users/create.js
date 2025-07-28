@@ -1,9 +1,8 @@
-import { useEffect } from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { PageHeader } from "@/components/layout/page-header";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation, useParams } from "wouter";
+import { useLocation } from "wouter";
 import { 
   Form, 
   FormControl, 
@@ -24,21 +23,19 @@ import {
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
-  SelectValue 
+  SelectValue
 } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { User } from "@shared/schema";
 
-// Define the schema for user editing
-const editUserSchema = z.object({
+// Schema remains zod-based
+const createUserSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters").optional().or(z.literal('')),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   role: z.enum(["admin", "editor"], {
@@ -46,24 +43,13 @@ const editUserSchema = z.object({
   }),
 });
 
-type EditUserFormValues = z.infer<typeof editUserSchema>;
-
-export default function EditUserPage() {
-  const { id } = useParams();
-  // const userId = parseInt(id);
-  
-  const { user: currentUser } = useAuth();
+export default function CreateUserPage() {
+  const { user: currentUser, registerMutation } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  const { data: user, isLoading, error } = useQuery<User>({
-    queryKey: [`/api/users/${id}`],
-    select: (data: any) => data?._doc || null, // fallback if strict types brea
-    // enabled: !isNaN(_id) && currentUser?.role === "admin",
-  });
-
-  const form = useForm<EditUserFormValues>({
-    resolver: zodResolver(editUserSchema),
+  const form = useForm({
+    resolver: zodResolver(createUserSchema),
     defaultValues: {
       username: "",
       email: "",
@@ -74,95 +60,25 @@ export default function EditUserPage() {
     },
   });
 
-  // Update form with user data once loaded
-  useEffect(() => {
-    if (user) {
-      console.log(user)
-      form.reset({
-        username: user.username,
-        email: user.email || "",
-        password: "", // Don't populate password
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        role: user.role,
-      });
-    }
-  }, [user, form]);
-
-  const updateUserMutation = useMutation({
-    mutationFn: async (data: Partial<EditUserFormValues>) => {
-      // Only include password if it's not empty
-      const payload = { ...data };
-      if (!payload.password) {
-        delete payload.password;
-      }
-      
-      const res = await apiRequest("PUT", `/api/users/${id}`, payload);
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "User updated",
-        description: "User has been updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${id}`] });
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
-      navigate("/admin/users");
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to update user: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (data: EditUserFormValues) => {
-    updateUserMutation.mutate(data);
+  const onSubmit = (data) => {
+    registerMutation.mutate(data, {
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+        navigate("/admin/users");
+      },
+    });
   };
 
-  // Verify current user is admin
   if (currentUser?.role !== "admin") {
     return (
       <MainLayout>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center">
           <h3 className="text-lg font-medium text-red-600 mb-2">Access Denied</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            You do not have permission to view this page. Only administrators can edit users.
+            You do not have permission to view this page. Only administrators can create users.
           </p>
           <Button asChild>
-            <a href="/">
-              Return to Dashboard
-            </a>
-          </Button>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Show error state
-  if (error || !user) {
-    return (
-      <MainLayout>
-        <div className="text-center py-10">
-          <h2 className="text-xl font-semibold text-red-500 mb-2">Error Loading User</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {error ? (error as Error).message : "User not found"}
-          </p>
-          <Button onClick={() => navigate("/users")}>
-            Return to Users
+            <a href="/admin">Return to Dashboard</a>
           </Button>
         </div>
       </MainLayout>
@@ -172,8 +88,8 @@ export default function EditUserPage() {
   return (
     <MainLayout>
       <PageHeader
-        title="Edit User"
-        description={`Editing: ${user.username}`}
+        title="Create User"
+        description="Add a new user to the system"
       />
 
       <div className="max-w-2xl mx-auto">
@@ -189,13 +105,12 @@ export default function EditUserPage() {
                       <FormItem>
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John" {...field} value={field.value || ""} />
+                          <Input placeholder="John" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
                   <FormField
                     control={form.control}
                     name="lastName"
@@ -203,14 +118,13 @@ export default function EditUserPage() {
                       <FormItem>
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Doe" {...field} value={field.value || ""} />
+                          <Input placeholder="Doe" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
                 <FormField
                   control={form.control}
                   name="username"
@@ -224,7 +138,6 @@ export default function EditUserPage() {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="email"
@@ -242,7 +155,6 @@ export default function EditUserPage() {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="password"
@@ -250,27 +162,20 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="Leave blank to keep current password" 
-                          {...field} 
-                        />
+                        <Input type="password" placeholder="••••••••" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="role"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Role</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a role" />
@@ -286,19 +191,19 @@ export default function EditUserPage() {
                   )}
                 />
               </CardContent>
-              
+
               <CardFooter className="flex justify-between border-t pt-6">
-                <Button variant="outline" type="button" onClick={() => navigate("/users")}>
+                <Button variant="outline" type="button" onClick={() => navigate("/admin/users")}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={updateUserMutation.isPending}>
-                  {updateUserMutation.isPending ? (
+                <Button type="submit" disabled={registerMutation.isPending}>
+                  {registerMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
+                      Creating...
                     </>
                   ) : (
-                    "Update User"
+                    "Create User"
                   )}
                 </Button>
               </CardFooter>

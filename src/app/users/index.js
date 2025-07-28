@@ -50,7 +50,7 @@ export default function UsersPage() {
   const { toast } = useToast();
 
   // Redirect if not admin in MainLayout
-  const { data: users, isLoading } = useQuery<User[]>({
+  const { data: users, isLoading } = useQuery({
     queryKey: ["/api/users"],
     enabled: currentUser?.role==="admin",
     queryFn: async () => {
@@ -58,7 +58,7 @@ export default function UsersPage() {
       if (!res.ok) throw new Error("Failed to fetch users");
       const raw = await res.json();
       
-      const data2= raw.map((user: any) => user._doc);
+      const data2= raw.map((user) => user._doc);
       return data2;
     },
   });
@@ -81,7 +81,7 @@ export default function UsersPage() {
   }, [users, searchTerm, roleFilter]);
   
   const deleteUserMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id) => {
       await apiRequest("DELETE", `/api/users/${id}`);
     },
     onSuccess: () => {
@@ -101,7 +101,7 @@ export default function UsersPage() {
     },
   });
 
-  const confirmDelete = (id: string) => {
+  const confirmDelete = (id) => {
     // Prevent deleting yourself
     if (id === currentUser?._id) {
       toast({

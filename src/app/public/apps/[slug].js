@@ -106,7 +106,7 @@ export default function AppDetailPage() {
   }
   
   // Format date helper function
-  function formatDate(dateString: string | Date) {
+  function formatDate(dateString) {
     return format(new Date(dateString), "MMMM d, yyyy");
   }
   
@@ -125,38 +125,38 @@ export default function AppDetailPage() {
 
   // Process content sections - use translated sections if available, otherwise use app sections
   const sectionsToUse = appContent.sections || app.sections || [];
-  const processedSections = sectionsToUse.filter((section: any) => section !== null);
+  const processedSections = sectionsToUse.filter((section) => section !== null);
   
   // Organize sections in the specified order
   const sectionTypes = {
-    introduction: processedSections?.filter((section: any) => 
+    introduction: processedSections?.filter((section) => 
       section?.type === 'content' && 
       (section?.title?.toLowerCase()?.includes('about') || 
        section?.title?.toLowerCase()?.includes('introduction'))),
     
-    whatIs: processedSections?.filter((section: any) => 
+    whatIs: processedSections?.filter((section) => 
       section?.type === 'content' && 
       section?.title?.toLowerCase()?.includes('what is')),
     
-    features: processedSections?.filter((section: any) => 
+    features: processedSections?.filter((section) => 
       section?.type === 'features'),
     
-    conclusion: processedSections?.filter((section: any) => 
+    conclusion: processedSections?.filter((section) => 
       section?.type === 'content' && 
       section?.title?.toLowerCase()?.includes('conclusion')),
     
-    faq: processedSections?.filter((section: any) => 
+    faq: processedSections?.filter((section) => 
       section?.type === 'faq'),
       
     // Other section types
-    installation: processedSections?.filter((section: any) => 
+    installation: processedSections?.filter((section) => 
       section?.type === 'installation'),
       
-    downloads: processedSections?.filter((section: any) => 
+    downloads: processedSections?.filter((section) => 
       section?.type === 'downloads'),
       
     // Other content sections that don't fit in predefined categories
-    otherContent: processedSections?.filter((section: any) => 
+    otherContent: processedSections?.filter((section) => 
       section?.type === 'content' && 
       !section?.title?.toLowerCase()?.includes('about') && 
       !section?.title?.toLowerCase()?.includes('introduction') &&
@@ -348,7 +348,7 @@ export default function AppDetailPage() {
                   </div>
                   
                   {/* Introduction content sections */}
-                  {sectionTypes.introduction?.map((section: AppSection, index: number) => (
+                  {sectionTypes.introduction?.map((section, index) => (
                     <div key={index} className="mt-6">
                       {section.title && section.title !== 'About' && (
                         <h3 className="text-xl font-semibold mb-3 mt-6 border-l-4 border-primary pl-3 py-1 text-white">{section.title}</h3>
@@ -360,7 +360,7 @@ export default function AppDetailPage() {
                       
                       {section.items && section.items.length > 0 && (
                         <div className="mt-4 space-y-4">
-                          {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                          {section.items.map((item, itemIndex) => (
                             <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                               <h4 className="font-medium text-white mb-2">{item.title}</h4>
                               <p className="text-white/70">{item.content}</p>
@@ -378,7 +378,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.whatIs.map((section: AppSection, index: number) => (
+                    {sectionTypes.whatIs.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <HelpCircle className="mr-2 h-5 w-5 text-primary" />
@@ -391,7 +391,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-6 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <h4 className="font-medium text-white mb-2">{item.title}</h4>
                                 <p className="text-white/70">{item.content}</p>
@@ -410,7 +410,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.features.map((section: AppSection, index: number) => (
+                    {sectionTypes.features.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <CheckCircle2 className="mr-2 h-5 w-5 text-primary" />
@@ -423,7 +423,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5 flex">
                                 <CheckCircle2 className="h-5 w-5 mr-3 text-primary shrink-0 mt-0.5" />
                                 <div>
@@ -445,7 +445,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.installation.map((section: AppSection, index: number) => (
+                    {sectionTypes.installation.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <Shield className="mr-2 h-5 w-5 text-primary" />
@@ -458,7 +458,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-4 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <div className="flex items-center mb-2">
                                   <div className="bg-primary/20 text-primary h-6 w-6 rounded-full flex items-center justify-center mr-3 font-medium text-sm">
@@ -482,7 +482,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.otherContent.map((section: AppSection, index: number) => (
+                    {sectionTypes.otherContent.map((section, index) => (
                       <div key={index} className={index > 0 ? "mt-10" : ""}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <FileText className="mr-2 h-5 w-5 text-primary" />
@@ -495,7 +495,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-4 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <h4 className="font-medium text-white mb-2">{item.title}</h4>
                                 <p className="text-white/70">{item.content}</p>
@@ -515,7 +515,7 @@ export default function AppDetailPage() {
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                   <div className="relative z-10">
-                    {sectionTypes.conclusion.map((section: AppSection, index: number) => (
+                    {sectionTypes.conclusion.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <Star className="mr-2 h-5 w-5 text-primary" />
@@ -612,8 +612,8 @@ export default function AppDetailPage() {
                         </span>
                       </AccordionTrigger>
                       <AccordionContent className="px-4 pb-4 space-y-3">
-                        {sectionTypes.faq.map((section: AppSection) => 
-                          section.items && section.items.map((item: AppSectionItem, itemIndex: number) => (
+                        {sectionTypes.faq.map((section) => 
+                          section.items && section.items.map((item, itemIndex) => (
                             <div key={itemIndex} className="border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
                               <h4 className="font-medium text-sm mb-1">{item.title}</h4>
                               <p className="text-white/70 text-xs">{item.content}</p>

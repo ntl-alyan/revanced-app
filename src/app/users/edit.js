@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { PageHeader } from "@/components/layout/page-header";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { 
   Form, 
   FormControl, 
@@ -29,13 +30,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { User } from "@shared/schema";
 
-// Define the schema for user creation
-const createUserSchema = z.object({
+// Define the schema for user editing
+const editUserSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters").optional().or(z.literal('')),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   role: z.enum(["admin", "editor"], {
@@ -43,15 +46,23 @@ const createUserSchema = z.object({
   }),
 });
 
-type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
-export default function CreateUserPage() {
-  const { user: currentUser, registerMutation } = useAuth();
+export default function EditUserPage() {
+  const { id } = useParams();
+  // const userId = parseInt(id);
+  
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  const form = useForm<CreateUserFormValues>({
-    resolver: zodResolver(createUserSchema),
+  const { data: user, isLoading, error } = useQuery<User>({
+    queryKey: [`/api/users/${id}`],
+    select: (data) => data?._doc || null, // fallback if strict types brea
+    // enabled: !isNaN(_id) && currentUser?.role === "admin",
+  });
+
+  const form = useForm({
+    resolver: zodResolver(editUserSchema),
     defaultValues: {
       username: "",
       email: "",
@@ -62,13 +73,52 @@ export default function CreateUserPage() {
     },
   });
 
-  const onSubmit = (data: CreateUserFormValues) => {
-    registerMutation.mutate(data, {
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ["/api/users"] });
-        navigate("/admin/users");
-      },
-    });
+  // Update form with user data once loaded
+  useEffect(() => {
+    if (user) {
+      console.log(user)
+      form.reset({
+        username: user.username,
+        email: user.email || "",
+        password: "", // Don't populate password
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        role: user.role,
+      });
+    }
+  }, [user, form]);
+
+  const updateUserMutation = useMutation({
+    mutationFn: async (data) => {
+      // Only include password if it's not empty
+      const payload = { ...data };
+      if (!payload.password) {
+        delete payload.password;
+      }
+      
+      const res = await apiRequest("PUT", `/api/users/${id}`, payload);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User updated",
+        description: "User has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      navigate("/admin/users");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update user: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data) => {
+    updateUserMutation.mutate(data);
   };
 
   // Verify current user is admin
@@ -78,12 +128,40 @@ export default function CreateUserPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center">
           <h3 className="text-lg font-medium text-red-600 mb-2">Access Denied</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            You do not have permission to view this page. Only administrators can create users.
+            You do not have permission to view this page. Only administrators can edit users.
           </p>
           <Button asChild>
-            <a href="/admin">
+            <a href="/">
               Return to Dashboard
             </a>
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (error || !user) {
+    return (
+      <MainLayout>
+        <div className="text-center py-10">
+          <h2 className="text-xl font-semibold text-red-500 mb-2">Error Loading User</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {error ? (error).message : "User not found"}
+          </p>
+          <Button onClick={() => navigate("/users")}>
+            Return to Users
           </Button>
         </div>
       </MainLayout>
@@ -93,8 +171,8 @@ export default function CreateUserPage() {
   return (
     <MainLayout>
       <PageHeader
-        title="Create User"
-        description="Add a new user to the system"
+        title="Edit User"
+        description={`Editing: ${user.username}`}
       />
 
       <div className="max-w-2xl mx-auto">
@@ -110,7 +188,7 @@ export default function CreateUserPage() {
                       <FormItem>
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John" {...field} />
+                          <Input placeholder="John" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -124,7 +202,7 @@ export default function CreateUserPage() {
                       <FormItem>
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Doe" {...field} />
+                          <Input placeholder="Doe" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -173,7 +251,7 @@ export default function CreateUserPage() {
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="••••••••" 
+                          placeholder="Leave blank to keep current password" 
                           {...field} 
                         />
                       </FormControl>
@@ -190,7 +268,7 @@ export default function CreateUserPage() {
                       <FormLabel>Role</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -209,17 +287,17 @@ export default function CreateUserPage() {
               </CardContent>
               
               <CardFooter className="flex justify-between border-t pt-6">
-                <Button variant="outline" type="button" onClick={() => navigate("/admin/users")}>
+                <Button variant="outline" type="button" onClick={() => navigate("/users")}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={registerMutation.isPending}>
-                  {registerMutation.isPending ? (
+                <Button type="submit" disabled={updateUserMutation.isPending}>
+                  {updateUserMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
+                      Updating...
                     </>
                   ) : (
-                    "Create User"
+                    "Update User"
                   )}
                 </Button>
               </CardFooter>
