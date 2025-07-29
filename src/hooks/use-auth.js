@@ -4,25 +4,25 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User } from "@shared/schema";
+// import { insertUserSchema, UserModel } from "../../shared/schema"
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "./use-toast";
 import { z } from "zod";
 
 
-const registerSchema = insertUserSchema.pick({
-  username: true,
-  password: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  role: true,
-}).extend({
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+// const registerSchema = insertUserSchema.pick({
+//   username: true,
+//   password: true,
+//   email: true,
+//   firstName: true,
+//   lastName: true,
+//   role: true,
+// }).extend({
+//   password: z.string().min(8, "Password must be at least 8 characters"),
+// });
 
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const { toast } = useToast();
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
     error,
     isLoading,
     refetch,
-  } = useQuery<User | null>({
+  } = useQuery({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     select: (data) => data?._doc || null, // fallback if strict types break

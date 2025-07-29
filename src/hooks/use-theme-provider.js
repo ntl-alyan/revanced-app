@@ -1,7 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const initialState = {
+  theme: "dark", // Changed from system to dark
+  setTheme: () => null,
+};
+
+
+const ThemeProviderContext = createContext(initialState);
 
 export function ThemeProvider({
   children,
@@ -9,7 +15,7 @@ export function ThemeProvider({
   storageKey = "ui-theme",
   ...props
 }) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setTheme] = useState(() => {
     // Always use dark theme by default
     return "dark";
   });
