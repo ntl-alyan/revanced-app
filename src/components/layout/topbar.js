@@ -1,10 +1,10 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/src/hooks/use-auth";
 import { Menu, Bell, Sun, Moon, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
-import { useTheme } from "@/hooks/use-theme-provider";
-import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
+import { getInitials } from "@/src/lib/utils";
+import { useTheme } from "@/src/hooks/use-theme-provider";
+import { useToast } from "@/src/hooks/use-toast";
 import { Link } from "wouter";
 
 
@@ -17,8 +17,8 @@ export function Topbar({ onMobileMenuToggle }) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
   
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const notificationsMenuRef = useRef<HTMLDivElement>(null);
+const profileMenuRef = useRef(null);
+const notificationsMenuRef = useRef(null);
   
   const toggleDarkMode = () => {
     setTheme(theme === "dark" ? "light" : "dark");

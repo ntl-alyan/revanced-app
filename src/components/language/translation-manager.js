@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Language, homepageSectionSchema, appSectionSchema } from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
+
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { useToast } from "@/src/hooks/use-toast";
+import { Button } from "@/src/components/ui/button";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
+import { Label } from "@/src/components/ui/label";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/src/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/src/components/ui/dialog";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,7 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/src/components/ui/alert-dialog";
 import {
   Globe,
   Plus,
@@ -54,8 +54,8 @@ import {
   XCircle,
   ArrowRight,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Switch as SwitchComponent } from "@/components/ui/switch";
+import { Badge } from "@/src/components/ui/badge";
+import { Switch as SwitchComponent } from "@/src/components/ui/switch";
 
 
 export function TranslationManager({

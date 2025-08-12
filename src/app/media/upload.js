@@ -1,19 +1,19 @@
 import { useState, useRef } from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
+import { useAuth } from "@/src/hooks/use-auth";
+import { useToast } from "@/src/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/src/lib/queryClient";
 import { useLocation } from "wouter";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { UploadCloud, X, File, Image } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { fileSize } from "@/lib/utils";
+import { Progress } from "@/src/components/ui/progress";
+import { fileSize } from "@/src/lib/utils";
 import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 
 export default function UploadMediaPage() {
   const { user } = useAuth();

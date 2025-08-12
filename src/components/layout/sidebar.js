@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/src/hooks/use-auth";
 import {
   Laptop,
   LayoutDashboard,
@@ -18,7 +18,7 @@ import {
   Code
 } from "lucide-react";
 import { useState } from "react";
-import { useTheme } from "@/hooks/use-theme-provider";
+import { useTheme } from "@/src/hooks/use-theme-provider";
 
 function NavItem({ icon, href, label, onClick }) {
   const [location] = useLocation();
