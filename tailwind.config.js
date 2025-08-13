@@ -1,18 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
-    "./app/**/*.{js,ts,jsx,tsx}",    // New Next.js 13+ app directory
-    "./src/**/*.{js,ts,jsx,tsx}",     // Existing src directory
-    "./components/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{ts,tsx,js,jsx}",
+    "./pages/**/*.{ts,tsx,js,jsx}",
+    "./components/**/*.{ts,tsx,js,jsx}",
+    "./src/**/*.{ts,tsx,js,jsx}",
   ],
-  darkMode: 'class', // Add this for manual dark mode control
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
+        background: "var(--background)",
+        foreground: "var(--foreground)",
       },
     },
   },
-  plugins: [],
-}
+  plugins: [
+    require("tailwindcss-animate"), // for shadcn/ui animations
+  ],
+};

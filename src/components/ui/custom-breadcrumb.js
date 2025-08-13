@@ -7,7 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/src/components/ui/breadcrumb";
 
 export const CustomBreadcrumb = ({ items }) => {
   return (
