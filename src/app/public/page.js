@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams, useLocation } from "wouter";
+import { Link } from "wouter";
 import {
-  ChevronRight,
   CheckCircle2,
   Shield,
   Zap,
@@ -9,7 +8,6 @@ import {
   Settings,
   Smartphone,
   Download,
-  Github,
   Code,
   Blocks,
   Lock,
@@ -20,22 +18,20 @@ import {
   ShieldAlert,
   Gauge,
   BatteryCharging,
-  ArrowRight,
   CornerRightDown,
 } from "lucide-react";
-import PublicLayout from "@/components/layout/public-layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { RevancedLogo } from "@/components/ui/logo";
-import { Badge } from "@/components/ui/badge";
+import PublicLayout from "@/src/components/layout/public-layout";
+import { Button } from "@/src/components/ui/button";
+import { RevancedLogo } from "@/src/components/ui/logo";
+import { Badge } from "@/src/components/ui/badge";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import { Helmet } from "react-helmet";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 // interface Section {
 //   type: string;

@@ -1,11 +1,10 @@
-import { ReactNode, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Menu, Github, Twitter, MessageCircle, ExternalLink } from "lucide-react";
-import { RevancedLogo } from "@/components/ui/revanced-logo";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { RevancedLogo } from "@/src/components/ui/revanced-logo";
+import { Button } from "@/src/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
+import { useIsMobile } from "@/src/hooks/use-mobile";
 import { Helmet } from "react-helmet";
 
 
