@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
 
-import { Link } from "wouter";
+import Link from 'next/link'
 import {
 	Table,
 	TableBody,

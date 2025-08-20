@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRoute, useLocation } from "wouter";
 import PublicLayout from "@/components/layout/public-layout";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { Post } from "@shared/schema";
 import { formatDistanceToNow, format } from "date-fns";
 import {
@@ -135,7 +135,7 @@ export default function BlogPostDetailPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>{post.metaTitle || post.title} - ReVanced</title>
         <meta
           name="description"
@@ -151,7 +151,7 @@ export default function BlogPostDetailPage() {
             ).toLowerCase()}`}
           />
         )}
-      </Helmet>
+      </Head>
 
       {/* Back to blog link */}
       <div className="container mx-auto px-4 pt-8">

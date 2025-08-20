@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import Link from 'next/link'
 import { MainLayout } from "@/components/layout/main-layout";
 import { PageHeader } from "@/components/layout/page-header";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { 
   AppWindow, 
   Plus, 
@@ -97,9 +97,9 @@ export default function AppsPage() {
 
   return (
     <MainLayout>
-      <Helmet>
+      <Head>
         <title>Apps - ReVanced Admin Panel</title>
-      </Helmet>
+      </Head>
       <PageHeader
         title="Apps"
         description="Manage app content and features for your blog"

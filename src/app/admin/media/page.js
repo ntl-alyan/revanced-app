@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
 
-import { Link } from "wouter";
+import Link from 'next/link'
 import { formatDate, fileSize } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import { Trash2, UploadCloud, Search, Image, FileText, Film, Music, File } from "lucide-react";

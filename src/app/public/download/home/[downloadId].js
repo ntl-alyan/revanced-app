@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRoute } from "wouter";
-import { Link } from "wouter";
+import Link from 'next/link'
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import PublicLayout from "@/components/layout/public-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +138,7 @@ export default function HomepageDownloadPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>Download ReVanced | ReVanced</title>
         <meta
           name="description"
@@ -159,7 +159,7 @@ export default function HomepageDownloadPage() {
           }
         />
         <meta property="og:site_name" content="ReVanced" />
-      </Helmet>
+      </Head>
 
       <div className="relative overflow-hidden min-h-[80vh] flex flex-col items-center justify-center py-16">
         {/* Background effects */}

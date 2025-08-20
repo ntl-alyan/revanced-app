@@ -32,7 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 
 export default function DownloadPage() {
   // Routing - download pages should not change with language
@@ -180,7 +180,7 @@ export default function DownloadPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>{pageTitle} | ReVanced</title>
         <meta
           name="description"
@@ -202,7 +202,7 @@ export default function DownloadPage() {
         />
         <meta property="og:site_name" content="ReVanced" />
         {app.icon && <meta property="og:image" content={app.icon} />}
-      </Helmet>
+      </Head>
 
       <div className="relative overflow-hidden min-h-[80vh] flex flex-col items-center justify-center py-16">
         {/* Background effects */}

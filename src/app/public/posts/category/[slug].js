@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRoute, useLocation } from "wouter";
 import PublicLayout from "@/components/layout/public-layout";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { Post, Category } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Calendar, User, Tag, ArrowLeft } from "lucide-react";
@@ -55,7 +55,7 @@ export default function CategoryPostsPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>
           {category ? `${category.name} - Blog` : "Category - Blog"} - ReVanced
         </title>
@@ -67,7 +67,7 @@ export default function CategoryPostsPage() {
               : "Browse posts by category on the ReVanced blog"
           }
         />
-      </Helmet>
+      </Head>
 
       {/* Category Header */}
       <section className="relative py-20 md:py-28 bg-gradient-to-b from-primary/10 via-background to-background">

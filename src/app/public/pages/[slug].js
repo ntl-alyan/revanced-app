@@ -4,8 +4,8 @@ import PublicLayout from "@/components/layout/public-layout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
-import { Helmet } from "react-helmet";
+import Link from 'next/link'
+import Head from 'next/head'
 
 // interface Page {
 //   id: number;
@@ -84,7 +84,7 @@ export default function PageDetailPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>
           {page.metaTitle || page.title} | {siteTitle}
         </title>
@@ -99,7 +99,7 @@ export default function PageDetailPage() {
         )}
         <meta property="og:type" content="article" />
         <meta property="og:url" content={window.location.href} />
-      </Helmet>
+      </Head>
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">

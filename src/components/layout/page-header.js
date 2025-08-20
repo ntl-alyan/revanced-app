@@ -1,5 +1,5 @@
 import { Button } from "@/src/components/ui/button";
-import { Link } from "wouter";
+import Link from 'next/link'
 import { PlusCircle } from "lucide-react";
 
 

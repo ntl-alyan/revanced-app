@@ -177,9 +177,9 @@ const StructuredDataPage = () => {
 
 	return (
 		<MainLayout>
-			<Helmet>
+			<Head>
 				<title>Structured Data | Admin Panel</title>
-			</Helmet>
+			</Head>
 			
 			<div className="p-6">
 				<div className="flex items-center justify-between mb-4">

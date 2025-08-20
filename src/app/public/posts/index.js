@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import PublicLayout from "@/components/layout/public-layout";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { Post } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Calendar, User, Tag, Eye } from "lucide-react";
@@ -43,7 +43,7 @@ export default function BlogPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         <title>Blog - ReVanced</title>
         <meta
           name="description"
@@ -53,7 +53,7 @@ export default function BlogPage() {
           name="keywords"
           content="revanced, blog, android, mods, tutorials"
         />
-      </Helmet>
+      </Head>
 
       {/* Blog Header */}
       <section className="relative py-20 md:py-28 bg-gradient-to-b from-primary/10 via-background to-background">

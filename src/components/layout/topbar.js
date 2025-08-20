@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
 import { getInitials } from "@/src/lib/utils";
 import { useTheme } from "@/src/hooks/use-theme-provider";
 import { useToast } from "@/src/hooks/use-toast";
-import { Link } from "wouter";
+import Link from 'next/link'
 
 
 

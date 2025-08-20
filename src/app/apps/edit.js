@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { z } from "zod";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -228,9 +228,9 @@ export default function EditAppPage() {
   if (error) {
     return (
       <MainLayout>
-        <Helmet>
+        <Head>
           <title>Error Loading App - ReVanced Admin Panel</title>
-        </Helmet>
+        </Head>
         <PageHeader
           title="Edit App"
           description="Update app information"
@@ -259,9 +259,9 @@ export default function EditAppPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <Helmet>
+        <Head>
           <title>Loading App... - ReVanced Admin Panel</title>
-        </Helmet>
+        </Head>
         <PageHeader
           title="Edit App"
           description="Update app information"
@@ -276,9 +276,9 @@ export default function EditAppPage() {
 
   return (
     <MainLayout>
-      <Helmet>
+      <Head>
         <title>Edit App: {app?.name} - ReVanced Admin Panel</title>
-      </Helmet>
+      </Head>
       <PageHeader
         title={`Edit App: ${app?.name}`}
         description="Update app information and content"

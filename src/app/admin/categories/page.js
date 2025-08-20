@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "wouter";
+import Link from 'next/link'
 import { Edit, Trash2, Search } from "lucide-react";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";

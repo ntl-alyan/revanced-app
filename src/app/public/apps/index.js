@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import Link from 'next/link'
 import {
   ChevronRight,
   Search,

@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import Link from 'next/link'
 import { Menu, Github, Twitter, MessageCircle, ExternalLink } from "lucide-react";
 import { RevancedLogo } from "@/src/components/ui/revanced-logo";
 import { Button } from "@/src/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
 import { useIsMobile } from "@/src/hooks/use-mobile";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 
 
 export default function PublicLayout({ children }) {
@@ -121,7 +121,7 @@ export default function PublicLayout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Helmet>
+      <Head>
         {/* Basic Meta Tags */}
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
@@ -148,7 +148,7 @@ export default function PublicLayout({ children }) {
             dangerouslySetInnerHTML={{ __html: getSetting('header_scripts') }} 
           />
         )}
-      </Helmet>
+      </Head>
       
       {/* Header with solid background to prevent click-through issues */}
       <header className="sticky top-0 z-50 bg-background border-b border-primary/20 shadow-md">

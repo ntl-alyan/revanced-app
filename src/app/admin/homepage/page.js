@@ -8,7 +8,7 @@ import { Eye, Save, Plus, Trash2, MoveUp, MoveDown, MoreVertical, Languages, Glo
 
 
 
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -240,9 +240,9 @@ export default function HomepagePage() {
 	if (isLoading) {
 		return (
 			<MainLayout>
-				<Helmet>
+				<Head>
 					<title>Loading Homepage - ReVanced Admin Panel</title>
-				</Helmet>
+				</Head>
 				<div className="flex items-center justify-center h-full p-8">
 					<div className="flex flex-col items-center gap-4">
 						<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -255,9 +255,9 @@ export default function HomepagePage() {
 	
 	return (
 		<MainLayout>
-			<Helmet>
+			<Head>
 				<title>Homepage Editor - ReVanced Admin Panel</title>
-			</Helmet>
+			</Head>
 			<div className="space-y-6 p-6">
 				<PageHeader
 					title="Homepage Editor"

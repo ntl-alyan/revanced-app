@@ -30,7 +30,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { AppSection, AppSectionItem } from "@shared/schema";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { RevancedLogo } from "@/components/ui/revanced-logo";
 import { 
   Tooltip,
@@ -165,7 +165,7 @@ export default function AppDetailPage() {
 
   return (
     <PublicLayout>
-      <Helmet>
+      <Head>
         {/* Basic Meta Tags */}
         <title>{appContent.metaTitle}</title>
         <meta name="description" content={appContent.metaDescription} />
@@ -183,7 +183,7 @@ export default function AppDetailPage() {
         <meta name="twitter:title" content={appContent.ogTitle} />
         <meta name="twitter:description" content={appContent.ogDescription} />
         <meta name="twitter:image" content={app.ogImage || app.icon || app.featuredImage || ''} />
-      </Helmet>
+      </Head>
       
       {/* Hero Banner with Glassmorphism */}
       <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] relative overflow-hidden">

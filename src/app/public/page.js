@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+"use client";
+
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link'
 import {
   CheckCircle2,
   Shield,
@@ -30,33 +32,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { useCallback } from "react";
-
-// interface Section {
-//   type: string;
-//   title?: string;
-//   content?: string;
-//   subtitle?: string;
-//   items?: Array<{
-//     title?: string;
-//     content?: string;
-//     icon?: string;
-//   }>;
-// }
-
-// interface App {
-//   id: number;
-//   name: string;
-//   slug: string;
-//   description?: string;
-//   version?: string;
-//   downloadUrl?: string;
-//   downloadId?: string;
-//   featuredImage?: string;
-//   icon?: string;
-//   isActive: boolean;
-// }
 
 export default function PublicHomePage() {
   // Get default homepage data
@@ -223,7 +200,7 @@ export default function PublicHomePage() {
   return (
     <PublicLayout>
       {/* Custom SEO for this page that overrides default values in PublicLayout */}
-      <Helmet>
+      <Head>
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={metaKeywords} />
@@ -239,7 +216,7 @@ export default function PublicHomePage() {
         <meta name="twitter:title" content={ogTitle} />
         <meta name="twitter:description" content={ogDescription} />
         {ogImage && <meta name="twitter:image" content={ogImage} />}
-      </Helmet>
+      </Head>
 
       {/* Hero Section - with a modern glassmorphism aesthetic */}
       <section className="relative overflow-hidden py-24 md:py-32 mb-10">
@@ -278,7 +255,7 @@ export default function PublicHomePage() {
                 className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                 asChild
               >
-                <Link to={`/download/home/${homepage.downloadId}`}>
+                <Link href={`/download/home/${homepage.downloadId}`}>
                   <Download className="mr-2 h-5 w-5" />
                   Download ReVanced
                 </Link>
@@ -290,7 +267,7 @@ export default function PublicHomePage() {
               className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
               asChild
             >
-              <Link to={`/apps`}>Explore Apps</Link>
+              <Link href={`/apps`}>Explore Apps</Link>
             </Button>
           </div>
 
@@ -535,7 +512,7 @@ export default function PublicHomePage() {
                       size="lg"
                       asChild
                     >
-                      <Link to={`/download/home/${homepage.downloadId}`}>
+                      <Link href={`/download/home/${homepage.downloadId}`}>
                         <Download className="h-5 w-5" />
                         Download ReVanced
                       </Link>
@@ -546,7 +523,7 @@ export default function PublicHomePage() {
                       size="lg"
                       asChild
                     >
-                      <Link to={`/apps`}>
+                      <Link href={`/apps`}>
                         <Smartphone className="h-5 w-5" />
                         Explore Apps
                       </Link>
@@ -558,8 +535,6 @@ export default function PublicHomePage() {
           </div>
         </section>
       )}
-
-      {/* Featured Apps section removed as per user request */}
 
       {/* FAQ Section - with styled accordion */}
       {sections.find((section) => section.type === "faq") && (
@@ -623,7 +598,7 @@ export default function PublicHomePage() {
                   className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   asChild
                 >
-                  <Link to={`/download/home/${homepage.downloadId}`}>
+                  <Link href={`/download/home/${homepage.downloadId}`}>
                     <Download className="mr-2 h-5 w-5" />
                     Download ReVanced
                   </Link>
@@ -634,7 +609,7 @@ export default function PublicHomePage() {
                   className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   asChild
                 >
-                  <Link to={`/apps`}>Get Started Now</Link>
+                  <Link href={`/apps`}>Get Started Now</Link>
                 </Button>
               )}
 

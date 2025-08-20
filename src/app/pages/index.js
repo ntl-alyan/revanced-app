@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/main-layout";
 import { PageHeader } from "@/components/layout/page-header";
 import { Page } from "@shared/schema";
-import { Link } from "wouter";
+import Link from 'next/link'
 import {
   Table,
   TableBody,

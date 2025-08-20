@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { z } from "zod";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -155,9 +155,9 @@ export default function CreateAppPage() {
 
   return (
     <MainLayout>
-      <Helmet>
+      <Head>
         <title>Create App - ReVanced Admin Panel</title>
-      </Helmet>
+      </Head>
       <PageHeader
         title="Create App"
         description="Add a new app to your blog"

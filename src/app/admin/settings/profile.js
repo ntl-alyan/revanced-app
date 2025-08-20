@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { MainLayout } from "@/components/layout/main-layout";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import {
   Card,
   CardContent,
@@ -151,9 +151,9 @@ export default function ProfileSettings() {
 
   return (
     <MainLayout>
-      <Helmet>
+      <Head>
         <title>Profile Settings - ReVanced Admin Panel</title>
-      </Helmet>
+      </Head>
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-2">

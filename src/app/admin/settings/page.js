@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { Helmet } from "react-helmet";
+import Head from 'next/head'
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
 import { useAuth } from "@/src/hooks/use-auth";
@@ -255,9 +255,9 @@ export default function SettingsPage() {
 	if (user?.role !== "admin") {
 		return (
 			<MainLayout>
-				<Helmet>
+				<Head>
 					<title>Access Denied - ReVanced Admin Panel</title>
-				</Helmet>
+				</Head>
 				<div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-8 text-center">
 					<h3 className="text-lg font-medium text-red-600 mb-2">
 						Access Denied
@@ -276,9 +276,9 @@ export default function SettingsPage() {
 
 	return (
 		<MainLayout>
-			<Helmet>
+			<Head>
 				<title>Settings - ReVanced Admin Panel</title>
-			</Helmet>
+			</Head>
 			<PageHeader
 				title="Settings"
 				description="Configure your website settings"
