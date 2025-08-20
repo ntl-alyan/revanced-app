@@ -598,7 +598,7 @@ export default function PublicHomePage() {
                   className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   asChild
                 >
-                  <Link href={`/download/home/${homepage.downloadId}`}>
+                  <Link href={`/public/download/home/${homepage.downloadId}`}>
                     <Download className="mr-2 h-5 w-5" />
                     Download ReVanced
                   </Link>
@@ -609,7 +609,7 @@ export default function PublicHomePage() {
                   className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   asChild
                 >
-                  <Link href={`/apps`}>Get Started Now</Link>
+                  <Link href={`/public/apps`}>Get Started Now</Link>
                 </Button>
               )}
 

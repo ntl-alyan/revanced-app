@@ -1,26 +1,15 @@
+"use client"
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
-import PublicLayout from "@/components/layout/public-layout";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import PublicLayout from "@/src/components/layout/public-layout";
+import { Button } from "@/src/components/ui/button";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import Link from 'next/link'
 import Head from 'next/head'
 
-// interface Page {
-//   id: number;
-//   title: string;
-//   slug: string;
-//   content: string;
-//   status: string;
-//   metaTitle?: string;
-//   metaDescription?: string;
-//   createdAt: string;
-//   updatedAt: string;
-// }
-
-export default function PageDetailPage() {
-  const [, params] = useRoute("/pages/:slug");
+export default function PageDetailPage({ params }) {
+  const router = useRouter();
   const slug = params?.slug;
 
   const { data: page, isLoading } = useQuery({
@@ -74,8 +63,8 @@ export default function PageDetailPage() {
           <p className="text-white/70 mb-8">
             The page you're looking for doesn't exist or may have been moved.
           </p>
-          <Button asChild>
-            <Link to="/">Return Home</Link>
+          <Button onClick={() => router.push("/")}>
+            Return Home
           </Button>
         </div>
       </PublicLayout>
@@ -98,7 +87,6 @@ export default function PageDetailPage() {
           <meta property="og:description" content={page.metaDescription} />
         )}
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={window.location.href} />
       </Head>
 
       <div className="container mx-auto px-4 py-8">
@@ -107,12 +95,10 @@ export default function PageDetailPage() {
             variant="ghost"
             size="sm"
             className="hover:bg-primary/10"
-            asChild
+            onClick={() => router.push("/")}
           >
-            <Link to="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Link>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
           </Button>
         </div>
 

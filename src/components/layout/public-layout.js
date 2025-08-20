@@ -316,7 +316,7 @@ export default function PublicLayout({ children }) {
                 {pages && pages.filter(page => page.status === 'published').map((page) => (
                   <li key={page.id}>
                     <Link 
-                      href={`/pages/${page.slug}`} 
+                      href={`/public/pages/${page.slug}`} 
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-primary/50 mr-2 transition-all group-hover:w-2"></span>
