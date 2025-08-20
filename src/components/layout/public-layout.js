@@ -8,8 +8,10 @@ import { useIsMobile } from "@/src/hooks/use-mobile";
 import Head from 'next/head'
 
 
+
 export default function PublicLayout({ children }) {
   const isMobile = useIsMobile();
+
   
   // Get settings
   const { data: settings } = useQuery({
@@ -36,9 +38,9 @@ export default function PublicLayout({ children }) {
   });
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Apps", href: "/apps" },
-    { name: "Blog", href: "/posts" },
+    { name: "Home", href: "/public" },
+    { name: "Apps", href: "/public/apps" },
+    { name: "Blog", href: "/public/posts" },
   ];
 
   // Social media links from settings with icons
@@ -126,7 +128,6 @@ export default function PublicLayout({ children }) {
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={metaKeywords} />
-        <meta name="robots" content="noindex, nofollow" id="__dummy__runtime-error-plugin" />
         
         {/* Open Graph Meta Tags */}
         <meta property="og:title" content={ogTitle} />
@@ -153,7 +154,7 @@ export default function PublicLayout({ children }) {
       {/* Header with solid background to prevent click-through issues */}
       <header className="sticky top-0 z-50 bg-background border-b border-primary/20 shadow-md">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <Link to="/" className="flex items-center space-x-2">
+          <Link href="/public" className="flex items-center space-x-2">
             {getSetting('revanced_logo') ? (
               <img src={getSetting('revanced_logo')} alt="ReVanced Logo" className="h-8 w-auto" />
             ) : (
@@ -188,7 +189,7 @@ export default function PublicLayout({ children }) {
                 
                 <nav className="flex flex-col space-y-4">
                   {navLinks.map((link) => (
-                    <Link key={link.name} to={link.href}>
+                    <Link key={link.name} href={link.href}>
                       <Button 
                         variant="ghost" 
                         className="justify-start w-full hover:bg-primary/10 hover:text-primary transition-all"
@@ -223,7 +224,7 @@ export default function PublicLayout({ children }) {
                 {navLinks.map((link) => (
                   <Link 
                     key={link.name} 
-                    to={link.href} 
+                    href={link.href} 
                     className="font-medium text-muted-foreground hover:text-primary transition-colors relative group"
                   >
                     {link.name}
@@ -298,7 +299,7 @@ export default function PublicLayout({ children }) {
                 {navLinks.map((link) => (
                   <li key={link.name}>
                     <Link 
-                      to={link.href} 
+                      href={link.href} 
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-primary/50 mr-2 transition-all group-hover:w-2"></span>
@@ -315,7 +316,7 @@ export default function PublicLayout({ children }) {
                 {pages && pages.filter(page => page.status === 'published').map((page) => (
                   <li key={page.id}>
                     <Link 
-                      to={`/pages/${page.slug}`} 
+                      href={`/pages/${page.slug}`} 
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-primary/50 mr-2 transition-all group-hover:w-2"></span>

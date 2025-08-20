@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
-import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2, Download, AlertCircle } from "lucide-react";
-import PublicLayout from "@/components/layout/public-layout";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+"use client"
 
-export default function AppDownloadPage() {
-  const params = useParams();
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, Download, AlertCircle, ArrowLeft } from "lucide-react";
+import PublicLayout from "@/src/components/layout/public-layout";
+import { Button } from "@/src/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
+
+export default function AppDownloadPage({ params }) {
+  const router = useRouter();
   const downloadId = params.id;
   const [app, setApp] = useState(null);
 
@@ -18,6 +20,13 @@ export default function AppDownloadPage() {
     error,
   } = useQuery({
     queryKey: ["/api/apps"],
+    queryFn: async () => {
+      const response = await fetch("/api/apps");
+      if (!response.ok) {
+        throw new Error("Failed to fetch apps");
+      }
+      return response.json();
+    },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
@@ -104,7 +113,8 @@ export default function AppDownloadPage() {
           </Alert>
 
           <div className="text-center mt-8">
-            <Button variant="outline" onClick={() => window.history.back()}>
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>
           </div>
@@ -250,7 +260,7 @@ export default function AppDownloadPage() {
         <div className="text-center mt-8">
           <Button
             variant="outline"
-            onClick={() => (window.location.href = `/apps/${app.slug}`)}
+            onClick={() => router.push(`/apps/${app.slug}`)}
           >
             Back to App Details
           </Button>

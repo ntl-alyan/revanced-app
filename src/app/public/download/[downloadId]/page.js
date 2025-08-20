@@ -1,7 +1,10 @@
+"use client"
+
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams, useRoute } from "wouter";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState, useEffect } from "react";
-import PublicLayout from "@/components/layout/public-layout";
+import PublicLayout from "@/src/components/layout/public-layout";
 import {
   Download,
   ArrowLeft,
@@ -16,28 +19,27 @@ import {
   ChevronDown,
   AlertTriangle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { RevancedLogo } from "@/components/ui/revanced-logo";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/src/components/ui/badge";
+import { RevancedLogo } from "@/src/components/ui/revanced-logo";
+import { Progress } from "@/src/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/src/components/ui/tooltip";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import Head from 'next/head'
 
-export default function DownloadPage() {
-  // Routing - download pages should not change with language
-  const [isMatch, params] = useRoute("/download/:downloadId");
-  const { downloadId } = params || useParams();
+export default function DownloadPage({ params }) {
+  const router = useRouter();
+  const { downloadId } = params;
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [showDownloadButton, setShowDownloadButton] = useState(false);
   const [preparingDownload, setPreparingDownload] = useState(true);
@@ -162,11 +164,9 @@ export default function DownloadPage() {
               The download link you're looking for is no longer available or may
               have been moved.
             </p>
-            <Button asChild size="lg" className="gap-2">
-              <Link to="/apps">
-                <ArrowLeft className="h-4 w-4" />
-                Browse Available Apps
-              </Link>
+            <Button size="lg" className="gap-2" onClick={() => router.push("/public/apps")}>
+              <ArrowLeft className="h-4 w-4" />
+              Browse Available Apps
             </Button>
           </div>
         </div>
@@ -215,13 +215,11 @@ export default function DownloadPage() {
           <div className="absolute top-4 left-4 md:left-4 z-50">
             <Button
               size="default"
-              asChild
               className="bg-primary hover:bg-primary/90 text-black font-medium shadow-lg border-2 border-white/20"
+              onClick={() => router.push(app.slug ? `/public/apps/${app.slug}` : "/public/apps")}
             >
-              <Link to={app.slug ? `/apps/${app.slug}` : "/apps"}>
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to {app.slug ? app.name : "Apps"}
-              </Link>
+              <ArrowLeft className= "text-white/80 h-5 w-5 mr-2" />
+               <p className="text-lg text-white/80 max-w-2xl">Back to {app.slug ? app.name : "Apps"}</p>
             </Button>
           </div>
 
@@ -297,7 +295,6 @@ export default function DownloadPage() {
                         <TooltipTrigger asChild>
                           <Button
                             className="w-full gap-3 py-6 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10"
-                            asChild
                           >
                             <a
                               href={app.downloadUrl}
@@ -332,8 +329,8 @@ export default function DownloadPage() {
                     <p className="text-white/70 mb-4">
                       No download is currently available for this application.
                     </p>
-                    <Button variant="outline" className="bg-black/30" asChild>
-                      <Link to="/apps">Browse Other Apps</Link>
+                    <Button variant="outline" className="bg-black/30" onClick={() => router.push("/public/apps")}>
+                      Browse Other Apps
                     </Button>
                   </div>
                 )}
@@ -570,11 +567,9 @@ export default function DownloadPage() {
 
               {/* App details link */}
               <div className="mt-6 text-center">
-                <Button variant="ghost" className="gap-2" asChild>
-                  <Link to={`/apps/${app.slug}`}>
-                    View Detailed App Information
-                    <ChevronDown className="h-4 w-4" />
-                  </Link>
+                <Button variant="ghost" className="gap-2" onClick={() => router.push(`/public/apps/${app.slug}`)}>
+                  View Detailed App Information
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>
             </div>

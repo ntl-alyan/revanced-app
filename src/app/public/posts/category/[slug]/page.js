@@ -1,27 +1,44 @@
+"use client"
+
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
-import PublicLayout from "@/components/layout/public-layout";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import PublicLayout from "@/src/components/layout/public-layout";
 import Head from 'next/head'
-import { Post } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, Calendar, User, Tag, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight, Calendar, User, Tag, ArrowLeft } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/src/components/ui/badge";
+import { Separator } from "@/src/components/ui/separator";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
-export default function BlogPage() {
-  const [, setLocation] = useLocation();
-  const { data: posts, isLoading } = useQuery({
-    queryKey: ["/api/posts"],
+export default function CategoryPostsPage({ params }) {
+  const router = useRouter();
+  const slug = params?.slug;
+
+  const { data: category, isLoading: isLoadingCategory } = useQuery({
+    queryKey: ["/api/categories", slug],
     queryFn: async () => {
-      const response = await fetch("/api/posts?status=published");
+      const response = await fetch(`/api/categories/slug/${slug}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch category");
+      }
+      return response.json();
+    },
+    enabled: !!slug,
+  });
+
+  const { data: posts, isLoading: isLoadingPosts } = useQuery({
+    queryKey: ["/api/posts", "category", category?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/posts/category/${category?.id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch posts");
       }
       return response.json();
     },
+    enabled: !!category?.id,
   });
 
   const { data: categories } = useQuery({
@@ -35,27 +52,25 @@ export default function BlogPage() {
     },
   });
 
-  const getCategoryName = (categoryId) => {
-    if (!categoryId || !categories) return "Uncategorized";
-    const category = categories.find((cat) => cat.id === categoryId);
-    return category ? category.name : "Uncategorized";
-  };
+  const isLoading = isLoadingCategory || isLoadingPosts;
 
   return (
     <PublicLayout>
       <Head>
-        <title>Blog - ReVanced</title>
+        <title>
+          {category ? `${category.name} - Blog` : "Category - Blog"} - ReVanced
+        </title>
         <meta
           name="description"
-          content="Stay updated with the latest news, tutorials, and updates about ReVanced and enhanced Android applications"
-        />
-        <meta
-          name="keywords"
-          content="revanced, blog, android, mods, tutorials"
+          content={
+            category
+              ? `Browse all ${category.name} posts on the ReVanced blog`
+              : "Browse posts by category on the ReVanced blog"
+          }
         />
       </Head>
 
-      {/* Blog Header */}
+      {/* Category Header */}
       <section className="relative py-20 md:py-28 bg-gradient-to-b from-primary/10 via-background to-background">
         {/* Background elements */}
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent"></div>
@@ -64,33 +79,49 @@ export default function BlogPage() {
 
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">
-            ReVanced Blog
+            {isLoadingCategory ? (
+              <Skeleton className="h-12 w-60 mx-auto" />
+            ) : category ? (
+              `${category.name} Articles`
+            ) : (
+              "Category"
+            )}
           </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-8">
-            Stay updated with the latest news, tutorials, and insights about
-            ReVanced and enhanced Android applications
-          </p>
+
+          {isLoadingCategory ? (
+            <Skeleton className="h-6 w-96 mx-auto mb-8" />
+          ) : (
+            category &&
+            category.description && (
+              <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-8">
+                {category.description}
+              </p>
+            )
+          )}
+
           <div className="flex flex-wrap justify-center gap-4 mt-8">
+            <Button
+              variant="ghost"
+              className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+              onClick={() => router.push("/public/posts")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> All Posts
+            </Button>
+
             {categories && categories.length > 0 && (
               <>
-                <Button
-                  variant="ghost"
-                  className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
-                  onClick={() => setLocation("/posts")}
-                >
-                  All Posts
-                </Button>
-
-                {categories.map((category) => (
+                {categories.map((cat) => (
                   <Button
-                    key={category.id}
-                    variant="ghost"
-                    className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
-                    onClick={() =>
-                      setLocation(`/posts/category/${category.slug}`)
+                    key={cat.id}
+                    variant={cat.slug === slug ? "default" : "ghost"}
+                    className={
+                      cat.slug === slug
+                        ? "bg-primary hover:bg-primary/90"
+                        : "border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
                     }
+                    onClick={() => router.push(`/public/posts/category/${cat.slug}`)}
                   >
-                    {category.name}
+                    {cat.name}
                   </Button>
                 ))}
               </>
@@ -135,22 +166,15 @@ export default function BlogPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <Badge className="absolute top-3 left-3 bg-primary/90 hover:bg-primary text-white">
-                      {getCategoryName(post.categoryId)}
-                    </Badge>
                   </div>
                 ) : (
-                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 h-48 flex items-center justify-center">
-                    <Badge className="absolute top-3 left-3 bg-primary/90 hover:bg-primary text-white">
-                      {getCategoryName(post.categoryId)}
-                    </Badge>
-                  </div>
+                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 h-48 flex items-center justify-center"></div>
                 )}
 
                 <div className="p-6 flex-grow flex flex-col">
                   <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
                     <Link
-                      to={`/posts/${post.slug}`}
+                      href={`/public/posts/${post.slug}`}
                       className="hover:underline"
                     >
                       {post.title}
@@ -184,7 +208,7 @@ export default function BlogPage() {
                         className="p-0 h-auto text-primary hover:text-primary hover:bg-transparent"
                         asChild
                       >
-                        <Link to={`/posts/${post.slug}`}>
+                        <Link href={`/public/posts/${post.slug}`}>
                           Read more <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
                       </Button>
@@ -196,10 +220,15 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="text-center py-20">
-            <h3 className="text-2xl font-bold mb-4">No posts found</h3>
+            <h3 className="text-2xl font-bold mb-4">
+              No posts found in this category
+            </h3>
             <p className="text-white/70 mb-8">
-              Check back later for updates and new content.
+              There are currently no posts in the {category?.name} category.
             </p>
+            <Button variant="default" onClick={() => router.push("/public/posts")}>
+              View All Posts
+            </Button>
           </div>
         )}
       </div>

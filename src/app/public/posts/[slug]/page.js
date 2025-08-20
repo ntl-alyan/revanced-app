@@ -1,30 +1,27 @@
+"use client"
+
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useRoute, useLocation } from "wouter";
-import PublicLayout from "@/components/layout/public-layout";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import PublicLayout from "@/src/components/layout/public-layout";
 import Head from 'next/head'
-import { Post } from "@shared/schema";
 import { formatDistanceToNow, format } from "date-fns";
 import {
   ArrowLeft,
   Calendar,
-  User,
-  Tag,
-  Share2,
   Facebook,
   Twitter,
   Linkedin,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/src/components/ui/badge";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
+import { Card, CardContent } from "@/src/components/ui/card";
 
-export default function BlogPostDetailPage() {
-  const [, params] = useRoute("/posts/:slug");
-  const [, setLocation] = useLocation();
+export default function BlogPostDetailPage({ params }) {
+  const router = useRouter();
   const slug = params?.slug;
 
   const {
@@ -86,8 +83,8 @@ export default function BlogPostDetailPage() {
             </AlertDescription>
           </Alert>
           <div className="text-center mt-8">
-            <Button asChild>
-              <Link to="/posts">Back to Blog</Link>
+            <Button onClick={() => router.push("/public/posts")}>
+              Back to Blog
             </Button>
           </div>
         </div>
@@ -125,8 +122,8 @@ export default function BlogPostDetailPage() {
           <p className="text-white/70 mb-8">
             The blog post you're looking for doesn't exist or has been removed.
           </p>
-          <Button asChild>
-            <Link to="/posts">Back to Blog</Link>
+          <Button onClick={() => router.push("/public/posts")}>
+            Back to Blog
           </Button>
         </div>
       </PublicLayout>
@@ -159,11 +156,9 @@ export default function BlogPostDetailPage() {
           variant="ghost"
           size="sm"
           className="text-primary hover:text-primary hover:bg-primary/10"
-          asChild
+          onClick={() => router.push("/public/posts")}
         >
-          <Link to="/posts">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blog
-          </Link>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blog
         </Button>
       </div>
 
@@ -286,9 +281,9 @@ export default function BlogPostDetailPage() {
                     <Button
                       variant="ghost"
                       className="border border-primary/30 hover:bg-primary/10 mt-2"
-                      asChild
+                      onClick={() => router.push("/public/posts")}
                     >
-                      <Link to="/posts">Back to All Posts</Link>
+                      Back to All Posts
                     </Button>
                   </div>
                 </div>
@@ -318,7 +313,7 @@ export default function BlogPostDetailPage() {
                         <div className="p-5">
                           <h4 className="font-bold mb-2 leading-tight">
                             <Link
-                              to={`/posts/${relatedPost.slug}`}
+                              href={`/public/posts/${relatedPost.slug}`}
                               className="hover:text-primary transition-colors hover:underline"
                             >
                               {relatedPost.title}
@@ -343,9 +338,9 @@ export default function BlogPostDetailPage() {
                   <Button
                     variant="outline"
                     className="w-full border-primary/30 hover:bg-primary/10"
-                    asChild
+                    onClick={() => router.push("/public/posts")}
                   >
-                    <Link to="/posts">View All Posts</Link>
+                    View All Posts
                   </Button>
                 </div>
               </div>

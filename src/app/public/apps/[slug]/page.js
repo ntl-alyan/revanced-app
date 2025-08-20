@@ -1,5 +1,6 @@
+"use client"
 import { useQuery } from "@tanstack/react-query";
-import { useRoute, Link } from "wouter";
+import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
   Github, 
@@ -9,7 +10,6 @@ import {
   ExternalLink, 
   Info,
   FileText,
-  LayoutList,
   HelpCircle,
   Share2,
   Smartphone,
@@ -17,56 +17,56 @@ import {
   GitBranch,
   Shield,
   CheckCircle2,
-  AlertTriangle,
-  ChevronDown,
-  MessageSquare
+  MessageSquare,
+  Star
 } from "lucide-react";
 
-import PublicLayout from "@/components/layout/public-layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Skeleton } from "@/components/ui/skeleton";
+import PublicLayout from "@/src/components/layout/public-layout";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/src/components/ui/accordion";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import { format } from "date-fns";
-import { AppSection, AppSectionItem } from "@shared/schema";
 import Head from 'next/head'
-import { RevancedLogo } from "@/components/ui/revanced-logo";
+import { RevancedLogo } from "@/src/components/ui/revanced-logo";
 import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/src/components/ui/tooltip";
 
-export default function AppDetailPage() {
-  // Handle both routes: /apps/:slug and /:lang/apps/:slug
-  const [isDefaultRoute, defaultParams] = useRoute("/apps/:slug");
-  const [isLangRoute, langParams] = useRoute("/:lang/apps/:slug");
-  
-  // Get parameters based on which route matched
-  const slug = isDefaultRoute ? defaultParams?.slug : langParams?.slug;
-  const langCode = isLangRoute ? langParams?.lang : 'en';
+export default function AppDetailPage({ params }) {
+  const router = useRouter();
+  const slug = params?.slug;
   
   // Get the app data first
   const { data: app, isLoading: appLoading, error: appError } = useQuery({
     queryKey: [`/api/apps/slug/${slug}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/apps/slug/${slug}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch app");
+      }
+      return response.json();
+    },
     enabled: !!slug,
   });
-  
   // Get all languages
-  const { data: languages, isLoading: languagesLoading } = useQuery({
+   const { data: languages, isLoading: languagesLoading } = useQuery({
     queryKey: ['/api/languages'],
-  });
-  
-  // Once we have the app and languages, get the translation if needed
-  const { data: translation, isLoading: translationLoading } = useQuery({
-    queryKey: [`/api/apps/${app?.id}/translations/language/${languages?.find(l => l.code === langCode)?.id}`],
-    enabled: !!app?.id && !!languages && langCode !== 'en',
+    queryFn: async () => {
+      const response = await fetch('/api/languages');
+      if (!response.ok) {
+        throw new Error("Failed to fetch languages");
+      }
+      return response.json();
+    },
   });
   
   // Determine if we're loading any data
-  const isLoading = appLoading || languagesLoading || translationLoading;
+  const isLoading = appLoading || languagesLoading;
 
   if (isLoading) {
     return (
@@ -96,8 +96,8 @@ export default function AppDetailPage() {
           <p className="text-muted-foreground mb-6">
             The app you're looking for doesn't exist or has been removed.
           </p>
-          <Button asChild>
-            <Link to="/apps">Back to Apps</Link>
+          <Button onClick={() => router.push("/public/apps")}>
+            Back to Apps
           </Button>
         </div>
       </PublicLayout>
@@ -105,57 +105,56 @@ export default function AppDetailPage() {
   }
   
   // Format date helper function
-  function formatDate(dateString: string | Date) {
+  function formatDate(dateString) {
     return format(new Date(dateString), "MMMM d, yyyy");
   }
   
-  // Use translated content when available (for non-English pages)
+  // Use app content directly (removed translation logic for simplicity)
   const appContent = {
-    name: translation?.name || app.name,
-    description: translation?.description || app.description,
-    metaTitle: translation?.metaTitle || app.metaTitle || `${app.name} | ReVanced`,
-    metaDescription: translation?.metaDescription || app.metaDescription || app.description?.substring(0, 160) || '',
-    metaKeywords: translation?.metaKeywords || app.metaKeywords || 'revanced, android, apps, mods',
-    ogTitle: translation?.ogTitle || app.ogTitle || translation?.metaTitle || app.metaTitle || `${app.name} | ReVanced`,
-    ogDescription: translation?.ogDescription || app.ogDescription || translation?.metaDescription || app.metaDescription || app.description?.substring(0, 160) || '',
-    // If we have translated sections, use those instead
-    sections: translation?.sections || app.sections
+    name: app.name,
+    description: app.description,
+    metaTitle: app.metaTitle || `${app.name} | ReVanced`,
+    metaDescription: app.metaDescription || app.description?.substring(0, 160) || '',
+    metaKeywords: app.metaKeywords || 'revanced, android, apps, mods',
+    ogTitle: app.ogTitle || app.metaTitle || `${app.name} | ReVanced`,
+    ogDescription: app.ogDescription || app.metaDescription || app.description?.substring(0, 160) || '',
+    sections: app.sections
   };
 
-  // Process content sections - use translated sections if available, otherwise use app sections
-  const sectionsToUse = appContent.sections || app.sections || [];
-  const processedSections = sectionsToUse.filter((section: any) => section !== null);
+  // Process content sections
+  const sectionsToUse = appContent.sections || [];
+  const processedSections = sectionsToUse.filter((section) => section !== null);
   
   // Organize sections in the specified order
   const sectionTypes = {
-    introduction: processedSections?.filter((section: any) => 
+    introduction: processedSections?.filter((section) => 
       section?.type === 'content' && 
       (section?.title?.toLowerCase()?.includes('about') || 
        section?.title?.toLowerCase()?.includes('introduction'))),
     
-    whatIs: processedSections?.filter((section: any) => 
+    whatIs: processedSections?.filter((section) => 
       section?.type === 'content' && 
       section?.title?.toLowerCase()?.includes('what is')),
     
-    features: processedSections?.filter((section: any) => 
+    features: processedSections?.filter((section) => 
       section?.type === 'features'),
     
-    conclusion: processedSections?.filter((section: any) => 
+    conclusion: processedSections?.filter((section) => 
       section?.type === 'content' && 
       section?.title?.toLowerCase()?.includes('conclusion')),
     
-    faq: processedSections?.filter((section: any) => 
+    faq: processedSections?.filter((section) => 
       section?.type === 'faq'),
       
     // Other section types
-    installation: processedSections?.filter((section: any) => 
+    installation: processedSections?.filter((section) => 
       section?.type === 'installation'),
       
-    downloads: processedSections?.filter((section: any) => 
+    downloads: processedSections?.filter((section) => 
       section?.type === 'downloads'),
       
     // Other content sections that don't fit in predefined categories
-    otherContent: processedSections?.filter((section: any) => 
+    otherContent: processedSections?.filter((section) => 
       section?.type === 'content' && 
       !section?.title?.toLowerCase()?.includes('about') && 
       !section?.title?.toLowerCase()?.includes('introduction') &&
@@ -193,11 +192,13 @@ export default function AppDetailPage() {
         
         {/* Navigation */}
         <div className="container mx-auto px-4 pt-6 pb-2 relative z-10">
-          <Button variant="ghost" className="group hover:bg-white/10 transition-colors text-white" asChild>
-            <Link to="/apps">
-              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              Back to Apps
-            </Link>
+          <Button 
+            variant="ghost" 
+            className="group hover:bg-white/10 transition-colors text-white"
+            onClick={() => router.push("/public/apps")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            Back to Apps
           </Button>
         </div>
         
@@ -247,6 +248,8 @@ export default function AppDetailPage() {
                   <Smartphone className="h-4 w-4 mr-2 text-primary/70" />
                   Android
                 </div>
+
+                
                 
                 {app.authorName && (
                   <div className="flex items-center">
@@ -256,17 +259,30 @@ export default function AppDetailPage() {
                 )}
               </div>
               
+              
+              {app.description && (
+                  <div className="mb-3 text-100">
+                    {app.description}
+                    
+                  </div>
+                  )}
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 {app.downloadId ? (
-                  <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10" asChild>
-                    <Link to={`/download/${app.downloadId}`}>
-                      <Download className="h-5 w-5" />
-                      Download Now
-                    </Link>
+                  <Button 
+                    size="lg" 
+                    className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10"
+                    onClick={() => router.push(`/public/download/${app.downloadId}`)}
+                  >
+                    <Download className="h-5 w-5" />
+                    Download Now
                   </Button>
                 ) : app.downloadUrl ? (
-                  <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10" asChild>
+                  <Button 
+                    size="lg" 
+                    className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10"
+                    asChild
+                  >
                     <a href={app.downloadUrl} target="_blank" rel="noopener noreferrer">
                       <Download className="h-5 w-5" />
                       Download Now
@@ -338,7 +354,7 @@ export default function AppDetailPage() {
                   </div>
                   
                   {/* Introduction content sections */}
-                  {sectionTypes.introduction?.map((section: AppSection, index: number) => (
+                  {sectionTypes.introduction?.map((section, index) => (
                     <div key={index} className="mt-6">
                       {section.title && section.title !== 'About' && (
                         <h3 className="text-xl font-semibold mb-3 mt-6 border-l-4 border-primary pl-3 py-1 text-white">{section.title}</h3>
@@ -350,7 +366,7 @@ export default function AppDetailPage() {
                       
                       {section.items && section.items.length > 0 && (
                         <div className="mt-4 space-y-4">
-                          {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                          {section.items.map((item, itemIndex) => (
                             <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                               <h4 className="font-medium text-white mb-2">{item.title}</h4>
                               <p className="text-white/70">{item.content}</p>
@@ -368,7 +384,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.whatIs.map((section: AppSection, index: number) => (
+                    {sectionTypes.whatIs.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <HelpCircle className="mr-2 h-5 w-5 text-primary" />
@@ -381,7 +397,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-6 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <h4 className="font-medium text-white mb-2">{item.title}</h4>
                                 <p className="text-white/70">{item.content}</p>
@@ -400,7 +416,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.features.map((section: AppSection, index: number) => (
+                    {sectionTypes.features.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <CheckCircle2 className="mr-2 h-5 w-5 text-primary" />
@@ -413,7 +429,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5 flex">
                                 <CheckCircle2 className="h-5 w-5 mr-3 text-primary shrink-0 mt-0.5" />
                                 <div>
@@ -435,7 +451,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.installation.map((section: AppSection, index: number) => (
+                    {sectionTypes.installation.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <Shield className="mr-2 h-5 w-5 text-primary" />
@@ -448,7 +464,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-4 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <div className="flex items-center mb-2">
                                   <div className="bg-primary/20 text-primary h-6 w-6 rounded-full flex items-center justify-center mr-3 font-medium text-sm">
@@ -472,7 +488,7 @@ export default function AppDetailPage() {
                 <div className="bg-gradient-to-br from-[#111827] via-[#0f172a] to-[#020617] p-6 rounded-xl border border-white/10 shadow-md relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="relative z-10">
-                    {sectionTypes.otherContent.map((section: AppSection, index: number) => (
+                    {sectionTypes.otherContent.map((section, index) => (
                       <div key={index} className={index > 0 ? "mt-10" : ""}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <FileText className="mr-2 h-5 w-5 text-primary" />
@@ -485,7 +501,7 @@ export default function AppDetailPage() {
                         
                         {section.items && section.items.length > 0 && (
                           <div className="mt-4 space-y-4">
-                            {section.items.map((item: AppSectionItem, itemIndex: number) => (
+                            {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="bg-black/20 rounded-lg p-4 border border-white/5">
                                 <h4 className="font-medium text-white mb-2">{item.title}</h4>
                                 <p className="text-white/70">{item.content}</p>
@@ -505,7 +521,7 @@ export default function AppDetailPage() {
                   <div className="absolute inset-0 bg-[radial-gradient(#ffffff10_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                   <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
                   <div className="relative z-10">
-                    {sectionTypes.conclusion.map((section: AppSection, index: number) => (
+                    {sectionTypes.conclusion.map((section, index) => (
                       <div key={index}>
                         <h2 className="text-2xl font-semibold mb-4 flex items-center text-white">
                           <Star className="mr-2 h-5 w-5 text-primary" />
@@ -602,8 +618,8 @@ export default function AppDetailPage() {
                         </span>
                       </AccordionTrigger>
                       <AccordionContent className="px-4 pb-4 space-y-3">
-                        {sectionTypes.faq.map((section: AppSection) => 
-                          section.items && section.items.map((item: AppSectionItem, itemIndex: number) => (
+                        {sectionTypes.faq.map((section) => 
+                          section.items && section.items.map((item, itemIndex) => (
                             <div key={itemIndex} className="border-b border-white/10 pb-3 last:border-b-0 last:pb-0">
                               <h4 className="font-medium text-sm mb-1">{item.title}</h4>
                               <p className="text-white/70 text-xs">{item.content}</p>

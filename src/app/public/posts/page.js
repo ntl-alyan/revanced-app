@@ -1,43 +1,26 @@
+"use client"
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useRoute, useLocation } from "wouter";
-import PublicLayout from "@/components/layout/public-layout";
+import Link from "next/link";
+import PublicLayout from "@/src/components/layout/public-layout";
 import Head from 'next/head'
-import { Post, Category } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, Calendar, User, Tag, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight, Calendar } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/src/components/ui/badge";
+import { Separator } from "@/src/components/ui/separator";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
-export default function CategoryPostsPage() {
-  const [, params] = useRoute("/posts/category/:slug");
-  const [, setLocation] = useLocation();
-  const slug = params?.slug;
-
-  const { data: category, isLoading: isLoadingCategory } = useQuery({
-    queryKey: ["/api/categories", slug],
+export default function BlogPage() {
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["/api/posts"],
     queryFn: async () => {
-      const response = await fetch(`/api/categories/slug/${slug}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch category");
-      }
-      return response.json();
-    },
-    enabled: !!slug,
-  });
-
-  const { data: posts, isLoading: isLoadingPosts } = useQuery({
-    queryKey: ["/api/posts", "category", category?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/posts/category/${category?.id}`);
+      const response = await fetch("/api/posts?status=published");
       if (!response.ok) {
         throw new Error("Failed to fetch posts");
       }
       return response.json();
     },
-    enabled: !!category?.id,
   });
 
   const { data: categories } = useQuery({
@@ -51,25 +34,27 @@ export default function CategoryPostsPage() {
     },
   });
 
-  const isLoading = isLoadingCategory || isLoadingPosts;
+  const getCategoryName = (categoryId) => {
+    if (!categoryId || !categories) return "Uncategorized";
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "Uncategorized";
+  };
 
   return (
     <PublicLayout>
       <Head>
-        <title>
-          {category ? `${category.name} - Blog` : "Category - Blog"} - ReVanced
-        </title>
+        <title>Blog - ReVanced</title>
         <meta
           name="description"
-          content={
-            category
-              ? `Browse all ${category.name} posts on the ReVanced blog`
-              : "Browse posts by category on the ReVanced blog"
-          }
+          content="Stay updated with the latest news, tutorials, and updates about ReVanced and enhanced Android applications"
+        />
+        <meta
+          name="keywords"
+          content="revanced, blog, android, mods, tutorials"
         />
       </Head>
 
-      {/* Category Header */}
+      {/* Blog Header */}
       <section className="relative py-20 md:py-28 bg-gradient-to-b from-primary/10 via-background to-background">
         {/* Background elements */}
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent"></div>
@@ -78,52 +63,37 @@ export default function CategoryPostsPage() {
 
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">
-            {isLoadingCategory ? (
-              <Skeleton className="h-12 w-60 mx-auto" />
-            ) : category ? (
-              `${category.name} Articles`
-            ) : (
-              "Category"
-            )}
+            ReVanced Blog
           </h1>
-
-          {isLoadingCategory ? (
-            <Skeleton className="h-6 w-96 mx-auto mb-8" />
-          ) : (
-            category &&
-            category.description && (
-              <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-8">
-                {category.description}
-              </p>
-            )
-          )}
-
+          <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-8">
+            Stay updated with the latest news, tutorials, and insights about
+            ReVanced and enhanced Android applications
+          </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <Button
-              variant="ghost"
-              className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
-              asChild
-            >
-              <Link to="/posts">
-                <ArrowLeft className="mr-2 h-4 w-4" /> All Posts
-              </Link>
-            </Button>
-
             {categories && categories.length > 0 && (
               <>
-                {categories.map((cat) => (
+                <Link href="/public/posts" passHref>
                   <Button
-                    key={cat.id}
-                    variant={cat.slug === slug ? "default" : "ghost"}
-                    className={
-                      cat.slug === slug
-                        ? "bg-primary hover:bg-primary/90"
-                        : "border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
-                    }
-                    onClick={() => setLocation(`/posts/category/${cat.slug}`)}
+                    variant="ghost"
+                    className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
                   >
-                    {cat.name}
+                    All Posts
                   </Button>
+                </Link>
+
+                {categories.map((category) => (
+                  <Link 
+                    key={category.id} 
+                    href={`/public/posts/category/${category.slug}`}
+                    passHref
+                  >
+                    <Button
+                      variant="ghost"
+                      className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+                    >
+                      {category.name}
+                    </Button>
+                  </Link>
                 ))}
               </>
             )}
@@ -167,15 +137,22 @@ export default function CategoryPostsPage() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <Badge className="absolute top-3 left-3 bg-primary/90 hover:bg-primary text-white">
+                      {getCategoryName(post.categoryId)}
+                    </Badge>
                   </div>
                 ) : (
-                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 h-48 flex items-center justify-center"></div>
+                  <div className="bg-gradient-to-br from-primary/20 to-primary/5 h-48 flex items-center justify-center">
+                    <Badge className="absolute top-3 left-3 bg-primary/90 hover:bg-primary text-white">
+                      {getCategoryName(post.categoryId)}
+                    </Badge>
+                  </div>
                 )}
 
                 <div className="p-6 flex-grow flex flex-col">
                   <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
                     <Link
-                      to={`/posts/${post.slug}`}
+                      href={`/public/posts/${post.slug}`}
                       className="hover:underline"
                     >
                       {post.title}
@@ -209,7 +186,7 @@ export default function CategoryPostsPage() {
                         className="p-0 h-auto text-primary hover:text-primary hover:bg-transparent"
                         asChild
                       >
-                        <Link to={`/posts/${post.slug}`}>
+                        <Link href={`/public/posts/${post.slug}`}>
                           Read more <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
                       </Button>
@@ -221,15 +198,10 @@ export default function CategoryPostsPage() {
           </div>
         ) : (
           <div className="text-center py-20">
-            <h3 className="text-2xl font-bold mb-4">
-              No posts found in this category
-            </h3>
+            <h3 className="text-2xl font-bold mb-4">No posts found</h3>
             <p className="text-white/70 mb-8">
-              There are currently no posts in the {category?.name} category.
+              Check back later for updates and new content.
             </p>
-            <Button asChild variant="default">
-              <Link to="/posts">View All Posts</Link>
-            </Button>
           </div>
         )}
       </div>

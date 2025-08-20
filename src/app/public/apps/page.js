@@ -1,37 +1,27 @@
+"use client"
 import { useQuery } from "@tanstack/react-query";
 import Link from 'next/link'
 import {
-  ChevronRight,
   Search,
   Filter,
   Smartphone,
   Package2,
   Download,
   Star,
-  ArrowRight,
-  ExternalLink,
   Github,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import PublicLayout from "@/components/layout/public-layout";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Button } from "@/src/components/ui/button";
+import PublicLayout from "@/src/components/layout/public-layout";
+import { Input } from "@/src/components/ui/input";
+import { Badge } from "@/src/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { App, AppSection } from "@shared/schema";
+} from "@/src/components/ui/select";
 
 export default function PublicAppsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -187,7 +177,7 @@ export default function PublicAppsPage() {
           ) : filteredApps.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {filteredApps.map((app) => (
-                <Link key={app.id} href={`/apps/${app.slug}`}>
+                <Link key={app.id} href={`/public/apps/${app.slug}`}>
                   <div className="rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#111827] to-[#0f172a] shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col relative group">
                     {/* Multiple visual effects layered for depth */}
                     <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>

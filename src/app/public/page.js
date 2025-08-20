@@ -267,7 +267,7 @@ export default function PublicHomePage() {
               className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
               asChild
             >
-              <Link href={`/apps`}>Explore Apps</Link>
+              <Link href={`/public/apps`}>Explore Apps</Link>
             </Button>
           </div>
 
