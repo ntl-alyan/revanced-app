@@ -1,11 +1,12 @@
+"use client";
 import { useEffect } from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCategorySchema, InsertCategory, Category } from "@shared/schema";
 import { z } from "zod";
+
 import { 
   Form, 
   FormControl, 
@@ -13,41 +14,46 @@ import {
   FormItem, 
   FormLabel, 
   FormMessage 
-} from "@/components/ui/form";
+} from "@/src/components/ui/form";
 import { 
   Card, 
   CardContent, 
   CardFooter
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+} from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Textarea } from "@/src/components/ui/textarea";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { useToast } from "@/src/hooks/use-toast";
+import { useAuth } from "@/src/hooks/use-auth";
 import { Redirect, useLocation, useParams } from "wouter";
-import { generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/src/lib/utils";
 import { Loader2 } from "lucide-react";
-
-const extendedCategorySchema = insertCategorySchema.extend({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  slug: z.string().min(2, "Slug must be at least 2 characters"),
-});
-
+import { insertCategorySchema } from "@/src/shared/schema";
 
 export default function EditCategoryPage() {
-  const { id } = useParams();
-  const categoryId = parseInt(id);
-  
+  const { id } = useParams(); // id as string
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  const { data: category, isLoading, error } = useQuery<Category>({
-    queryKey: [`/api/categories/${categoryId}`],
-    enabled: !isNaN(categoryId),
+  // Extend Zod schema
+  const extendedCategorySchema = insertCategorySchema.extend({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    slug: z.string().min(2, "Slug must be at least 2 characters"),
   });
 
+  // Fetch category by ID
+  const { data: category, isLoading, error } = useQuery({
+    queryKey: [`/api/categories/${id}`],
+    enabled: !!id,
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/categories/${id}`);
+      return res.json();
+    },
+  });
+
+  // React Hook Form
   const form = useForm({
     resolver: zodResolver(extendedCategorySchema),
     defaultValues: {
@@ -57,7 +63,7 @@ export default function EditCategoryPage() {
     },
   });
 
-  // Update form with category data once loaded
+  // Update form values when category is loaded
   useEffect(() => {
     if (category) {
       form.reset({
@@ -68,9 +74,10 @@ export default function EditCategoryPage() {
     }
   }, [category, form]);
 
+  // Mutation to update category
   const updateCategoryMutation = useMutation({
     mutationFn: async (data) => {
-      const res = await apiRequest("PUT", `/api/categories/${categoryId}`, data);
+      const res = await apiRequest("PUT", `/api/categories/${id}`, data);
       return res.json();
     },
     onSuccess: () => {
@@ -78,7 +85,7 @@ export default function EditCategoryPage() {
         title: "Category updated",
         description: "Category has been updated successfully",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/categories/${categoryId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/categories/${id}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       navigate("/categories");
@@ -105,11 +112,10 @@ export default function EditCategoryPage() {
   };
 
   // Redirect if not authenticated
-  if (!user) {
-    return <Redirect to="/auth" />;
-  }
+  // if (!user) {
+  //   return <Redirect to="/auth" />;
+  // }
 
-  // Show loading state
   if (isLoading) {
     return (
       <MainLayout>
@@ -120,7 +126,6 @@ export default function EditCategoryPage() {
     );
   }
 
-  // Show error state
   if (error || !category) {
     return (
       <MainLayout>
@@ -129,7 +134,7 @@ export default function EditCategoryPage() {
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             {error ? error.message : "Category not found"}
           </p>
-          <Button onClick={() => navigate("/categories")}>
+          <Button onClick={() => navigate("/admin/categories")}>
             Return to Categories
           </Button>
         </div>
@@ -205,7 +210,7 @@ export default function EditCategoryPage() {
                   )}
                 />
               </CardContent>
-              
+
               <CardFooter className="flex justify-between border-t pt-6">
                 <Button variant="outline" type="button" onClick={() => navigate("/categories")}>
                   Cancel
