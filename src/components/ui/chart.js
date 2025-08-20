@@ -1,13 +1,14 @@
-import * as React from "react";
+
 import * as RechartsPrimitive from "recharts";
 import { cn } from "@/src/lib/utils";
+import { createContext, forwardRef, useContext, useMemo } from "react";
 
 const THEMES = { light: "", dark: ".dark" };
 
-const ChartContext = React.createContext(null);
+const ChartContext = createContext(null);
 
 function useChart() {
-  const context = React.useContext(ChartContext);
+  const context = useContext(ChartContext);
 
   if (!context) {
     throw new Error("useChart must be used within a <ChartContainer />");
@@ -16,9 +17,9 @@ function useChart() {
   return context;
 }
 
-const ChartContainer = React.forwardRef(
+const ChartContainer = forwardRef(
   ({ id, className, children, config, ...props }, ref) => {
-    const uniqueId = React.useId();
+    const uniqueId = useId();
     const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
 
     return (
@@ -78,7 +79,7 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
-const ChartTooltipContent = React.forwardRef(
+const ChartTooltipContent = forwardRef(
   (
     {
       active,
@@ -99,7 +100,7 @@ const ChartTooltipContent = React.forwardRef(
   ) => {
     const { config } = useChart();
 
-    const tooltipLabel = React.useMemo(() => {
+    const tooltipLabel = useMemo(() => {
       if (hideLabel || !payload?.length) {
         return null;
       }
@@ -214,7 +215,7 @@ ChartTooltipContent.displayName = "ChartTooltip";
 
 const ChartLegend = RechartsPrimitive.Legend;
 
-const ChartLegendContent = React.forwardRef(
+const ChartLegendContent = forwardRef(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
     ref
