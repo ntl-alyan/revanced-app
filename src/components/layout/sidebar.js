@@ -1,5 +1,6 @@
 import { cn } from "@/src/lib/utils";
-import { Link, useLocation } from "wouter";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/src/hooks/use-auth";
 import {
   Laptop,
@@ -21,13 +22,20 @@ import { useState } from "react";
 import { useTheme } from "@/src/hooks/use-theme-provider";
 
 function NavItem({ icon, href, label, onClick }) {
-  const [location] = useLocation();
-  const isActive = location === href || location.startsWith(`${href}/`);
+  const router = useRouter();
+  const pathname = usePathname();
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    router.push(href);
+    if (onClick) onClick();
+  };
 
   return (
     <Link
       href={href}
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         "flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-primary hover:bg-opacity-10 hover:text-primary rounded-md transition-colors",
         isActive && "text-primary bg-primary bg-opacity-10"
@@ -45,6 +53,7 @@ export function Sidebar({ className, isMobileOpen, onCloseMobile }) {
   const { user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const router = useRouter();
 
   return (
     <div
@@ -180,10 +189,8 @@ export function Sidebar({ className, isMobileOpen, onCloseMobile }) {
       </div>
       
       <div className="px-4 py-4 mt-auto border-t border-gray-200 dark:border-gray-700 absolute bottom-0 w-full">
-        <a 
-          href="#" 
-          target="_blank" 
-          className="flex items-center px-4 py-2 text-primary hover:bg-primary hover:bg-opacity-10 rounded-md transition-colors"
+        <button
+          className="flex items-center px-4 py-2 text-primary hover:bg-primary hover:bg-opacity-10 rounded-md transition-colors w-full"
           onClick={() => {
             window.open("/", "_blank");
             onCloseMobile();
@@ -191,7 +198,7 @@ export function Sidebar({ className, isMobileOpen, onCloseMobile }) {
         >
           <ExternalLink className="h-5 w-5 mr-3" />
           Visit Website
-        </a>
+        </button>
       </div>
     </div>
   );
