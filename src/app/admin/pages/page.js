@@ -1,8 +1,9 @@
+"use client"
+
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { Page } from "@shared/schema";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
 import Link from 'next/link'
 import {
   Table,
@@ -11,19 +12,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { formatDate } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@/src/components/ui/table";
+import { formatDate } from "@/src/lib/utils";
+import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/src/components/ui/button";
 import { Edit, Trash2, Eye, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/src/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/src/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,19 +34,24 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+} from "@/src/components/ui/alert-dialog";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { Skeleton } from "@/src/components/ui/skeleton";
+import { useToast } from "@/src/hooks/use-toast";
 
 export default function PagesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [deletePageId, setDeletePageId] = useState(null);
   const { toast } = useToast();
 
   const { data: pages, isLoading } = useQuery({
     queryKey: ["/api/pages"],
+    queryFn: async () => {
+      const res = await fetch("/api/pages");
+      if (!res.ok) throw new Error("Network response was not ok");
+      return res.json();
+    },
   });
 
   const deletePageMutation = useMutation({

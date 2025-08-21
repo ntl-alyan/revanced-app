@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 
 export function StatCard({ title, value, icon, trend, bgColor = "bg-blue-100 dark:bg-blue-900", className }) {
   return (
