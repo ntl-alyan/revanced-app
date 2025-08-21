@@ -54,7 +54,8 @@ export default function RedirectsPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await apiRequest("DELETE", `/api/redirects/${id}`);
+      const res = await apiRequest("DELETE", `/api/redirects/${id}`);
+      return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
@@ -152,7 +153,7 @@ export default function RedirectsPage() {
             <Edit size={16} />
           </Button>
           <AlertDialog
-            open={redirectToDelete === row.original.id}
+            open={redirectToDelete === row.original._id}
             onOpenChange={(open) => !open && setRedirectToDelete(null)}
           >
             <AlertDialogTrigger asChild>
@@ -160,7 +161,7 @@ export default function RedirectsPage() {
                 variant="ghost"
                 size="icon"
                 className="text-red-500 hover:text-red-700"
-                onClick={() => setRedirectToDelete(row.original.id)}
+                onClick={() => setRedirectToDelete(row.original._id)}
               >
                 <Trash2 size={16} />
               </Button>

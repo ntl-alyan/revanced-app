@@ -134,3 +134,71 @@ export async function PUT(req, { params }) {
     );
   }
 }
+
+export async function DELETE(req, { params }) {
+  try {
+    const { id } = params;
+
+    // Check authentication
+    const authResult = await isAuthenticated(req);
+    if (!authResult.authenticated) {
+      return NextResponse.json(
+        { message: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+
+    // Validate ObjectId format
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: "Invalid redirect ID format" },
+        { status: 400 }
+      );
+    }
+
+    // Check if redirect exists
+    const redirect = await db.collection("redirects").findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!redirect) {
+      return NextResponse.json(
+        { message: "Redirect not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete the redirect
+    const result = await db.collection("redirects").deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { message: "Redirect not found" },
+        { status: 404 }
+      );
+    }
+
+    // Return 204 No Content
+    return NextResponse.json({ message: "Redirect Deleted" }, { status: 200 });
+  } catch (error) {
+    console.error("Delete redirect error:", error);
+
+    // Handle invalid ObjectId format
+    if (error instanceof Error && error.message.includes("ObjectId")) {
+      return NextResponse.json(
+        { message: "Invalid redirect ID format" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

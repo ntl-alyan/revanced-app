@@ -52,7 +52,7 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn(),
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      // staleTime: Infinity,
       retry: false,
     },
     mutations: { retry: false },
