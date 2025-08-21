@@ -1,185 +1,107 @@
 "use client";
-import { MainLayout } from "@/src/components/layout/main-layout";
-import { PageHeader } from "@/src/components/layout/page-header";
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCategorySchema, InsertCategory } from "@/src/shared/schema";
+
+import { useState } from "react";
 import { z } from "zod";
-import { 
-	Form, 
-	FormControl, 
-	FormField, 
-	FormItem, 
-	FormLabel, 
-	FormMessage 
-} from "@/src/components/ui/form";
-import { 
-	Card, 
-	CardContent, 
-	CardFooter
-} from "@/src/components/ui/card";
-import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import { Textarea } from "@/src/components/ui/textarea";
-import { apiRequest, queryClient } from "@/src/lib/queryClient";
-import { useToast } from "@/src/hooks/use-toast";
-import { useAuth } from "@/src/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { extendedCategorySchema } from "@/src/shared/schema";
 import { generateSlug } from "@/src/lib/utils";
 
-const extendedCategorySchema = insertCategorySchema.extend({
-	name: z.string().min(2, "Name must be at least 2 characters"),
-	slug: z.string().min(2, "Slug must be at least 2 characters"),
-});
-
-
 export default function CreateCategoryPage() {
-	const { user } = useAuth();
-	const { toast } = useToast();
-	const [, navigate] = useLocation();
+  const [serverError, setServerError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-	const form = useForm({
-		resolver: zodResolver(extendedCategorySchema),
-		defaultValues: {
-			name: "",
-			slug: "",
-			description: "",
-		},
-	});
+  // React Hook Form with Zod
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm({
+    resolver: zodResolver(extendedCategorySchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+    },
+  });
 
-	const createCategoryMutation = useMutation({
-		mutationFn: async (data) => {
-			const res = await apiRequest("POST", "/api/categories", data);
-			return res.json();
-		},
-		onSuccess: () => {
-			toast({
-				title: "Category created",
-				description: "Category has been created successfully",
-			});
-			queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
-			queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-			navigate("/categories");
-		},
-		onError: (error) => {
-			toast({
-				title: "Error",
-				description: `Failed to create category: ${error.message}`,
-				variant: "destructive",
-			});
-		},
-	});
+  const watchName = watch("name");
+  // auto-generate slug from name
+  const autoSlug = generateSlug(watchName);
 
-	const onSubmit = (data) => {
-		createCategoryMutation.mutate(data);
-	};
+  const onSubmit = async (data) => {
+    try {
+      // override slug if empty
+      if (!data.slug) data.slug = autoSlug;
 
-	const watchName = form.watch("name");
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-	const handleGenerateSlug = () => {
-		if (!watchName) return;
-		const slug = generateSlug(watchName);
-		form.setValue("slug", slug);
-	};
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to create category");
 
-	// Redirect if not authenticated
-	// if (!user) {
-	// 	return <Redirect to="/auth" />;
-	// }
+      setSuccessMessage("Category created successfully!");
+      setServerError("");
+    } catch (err) {
+      setServerError(err.message);
+      setSuccessMessage("");
+    }
+  };
 
-	return (
-		<MainLayout>
-			<PageHeader
-				title="Create Category"
-				description="Create a new blog category"
-			/>
+  return (
+    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
+      <h1 className="text-2xl font-bold mb-4">Create Category</h1>
 
-			<div className="max-w-2xl mx-auto">
-				<Card>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)}>
-							<CardContent className="space-y-4 pt-6">
-								<FormField
-									control={form.control}
-									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Name</FormLabel>
-											<FormControl>
-												<Input 
-													placeholder="Category name" 
-													{...field} 
-													onChange={(e) => {
-														field.onChange(e);
-														// Auto-update slug only if slug is empty
-														if (!form.getValues("slug")) {
-															const slug = generateSlug(e.target.value);
-															form.setValue("slug", slug);
-														}
-													}}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+      {serverError && <p className="text-red-500 mb-2">{serverError}</p>}
+      {successMessage && <p className="text-green-500 mb-2">{successMessage}</p>}
 
-								<FormField
-									control={form.control}
-									name="slug"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Slug</FormLabel>
-											<div className="flex gap-2">
-												<FormControl>
-													<Input placeholder="category-slug" {...field} />
-												</FormControl>
-												<Button 
-													type="button" 
-													variant="outline" 
-													onClick={handleGenerateSlug}
-													disabled={!watchName}
-												>
-													Generate
-												</Button>
-											</div>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label className="block mb-1 font-medium">Name</label>
+          <input
+            type="text"
+            {...register("name")}
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Category Name"
+          />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+        </div>
 
-								<FormField
-									control={form.control}
-									name="description"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Description</FormLabel>
-											<FormControl>
-												<Textarea 
-													placeholder="Category description (optional)" 
-													{...field} 
-													rows={4}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</CardContent>
-							
-							<CardFooter className="flex justify-between border-t pt-6">
-								<Button variant="outline" type="button" onClick={() => navigate("/categories")}>
-									Cancel
-								</Button>
-								<Button type="submit" disabled={createCategoryMutation.isPending}>
-									{createCategoryMutation.isPending ? "Creating..." : "Create Category"}
-								</Button>
-							</CardFooter>
-						</form>
-					</Form>
-				</Card>
-			</div>
-		</MainLayout>
-	);
+        <div>
+          <label className="block mb-1 font-medium">Slug</label>
+          <input
+            type="text"
+            {...register("slug")}
+            className="w-full border px-3 py-2 rounded"
+            placeholder={autoSlug || "Auto-generated from name"}
+          />
+          {errors.slug && <p className="text-red-500">{errors.slug.message}</p>}
+        </div>
+
+        <div>
+          <label className="block mb-1 font-medium">Description</label>
+          <textarea
+            {...register("description")}
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Optional description"
+          />
+          {errors.description && (
+            <p className="text-red-500">{errors.description.message}</p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          {isSubmitting ? "Creating..." : "Create Category"}
+        </button>
+      </form>
+    </div>
+  );
 }
