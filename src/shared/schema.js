@@ -1,166 +1,230 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-// User schema
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  firstName: { type: String },
-  lastName: { type: String },
-  role: { type: String, required: true, default: "editor" },
-  createdAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 USER SCHEMA
+-------------------------------- */
+const userSchema = new mongoose.Schema(
+	{
+		username: { type: String, required: true, unique: true },
+		password: { type: String, required: true },
+		email: { type: String, required: true, unique: true },
+		firstName: { type: String },
+		lastName: { type: String },
+		role: { type: String, enum: ["admin", "editor"], default: "editor" },
+	},
+	{ timestamps: true }
+);
 
-exports.UserModel = mongoose.model('User', userSchema);
+export const UserModel =
+	mongoose.models.User || mongoose.model("User", userSchema);
 
-// Category schema
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  description: { type: String },
-  createdAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 CATEGORY SCHEMA
+-------------------------------- */
+const categorySchema = new mongoose.Schema(
+	{
+		name: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
+		description: { type: String },
+	},
+	{ timestamps: true }
+);
 
-exports.CategoryModel = mongoose.model('Category', categorySchema);
+export const CategoryModel =
+	mongoose.models.Category || mongoose.model("Category", categorySchema);
 
-// Post schema
-const postSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  content: { type: String },
-  excerpt: { type: String },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  featuredImage: { type: String },
-  status: { type: String, default: 'draft', required: true },
-  metaTitle: { type: String },
-  metaDescription: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 POST SCHEMA
+-------------------------------- */
+const postSchema = new mongoose.Schema(
+	{
+		title: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
+		content: { type: String },
+		excerpt: { type: String },
+		category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+		author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		featuredImage: { type: String },
+		status: { type: String, default: "draft", required: true },
+		metaTitle: { type: String },
+		metaDescription: { type: String },
+	},
+	{ timestamps: true }
+);
 
-exports.PostModel = mongoose.model('Post', postSchema);
+export const PostModel =
+	mongoose.models.Post || mongoose.model("Post", postSchema);
 
-// Page schema
-const pageSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  content: { type: String },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  status: { type: String, default: 'draft', required: true },
-  metaTitle: { type: String },
-  metaDescription: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 PAGE SCHEMA
+-------------------------------- */
+const pageSchema = new mongoose.Schema(
+	{
+		title: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
+		content: { type: String },
+		author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		status: { type: String, default: "draft", required: true },
+		metaTitle: { type: String },
+		metaDescription: { type: String },
+	},
+	{ timestamps: true }
+);
 
-exports.PageModel = mongoose.model('Page', pageSchema);
+export const PageModel =
+	mongoose.models.Page || mongoose.model("Page", pageSchema);
 
-// Media schema
-const mediaSchema = new mongoose.Schema({
-  filename: { type: String, required: true, unique: true },
-  originalFilename: { type: String, required: true },
-  filePath: { type: String, required: true },
-  fileType: { type: String, required: true },
-  fileSize: { type: Number, required: true },
-  width: { type: Number },
-  height: { type: Number },
-  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 MEDIA SCHEMA
+-------------------------------- */
+const mediaSchema = new mongoose.Schema(
+	{
+		filename: { type: String, required: true, unique: true },
+		originalFilename: { type: String, required: true },
+		filePath: { type: String, required: true },
+		fileType: { type: String, required: true },
+		fileSize: { type: Number, required: true },
+		width: { type: Number },
+		height: { type: Number },
+		uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+	},
+	{ timestamps: true }
+);
 
-exports.MediaModel = mongoose.model('Media', mediaSchema);
+export const MediaModel =
+	mongoose.models.Media || mongoose.model("Media", mediaSchema);
 
-// Settings schema
-const settingSchema = new mongoose.Schema({
-  settingKey: { type: String, required: true, unique: true },
-  settingValue: { type: String },
-  settingType: { type: String, default: 'string', required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 SETTINGS SCHEMA
+-------------------------------- */
+const settingSchema = new mongoose.Schema(
+	{
+		settingKey: { type: String, required: true, unique: true },
+		settingValue: { type: String },
+		settingType: { type: String, default: "string", required: true },
+	},
+	{ timestamps: true }
+);
 
-exports.SettingModel = mongoose.model('Setting', settingSchema);
+export const SettingModel =
+	mongoose.models.Setting || mongoose.model("Setting", settingSchema);
 
-// Homepage schema
-const homepageMongoSchema = new mongoose.Schema({
-  sections: { type: Object, required: true },
-  version: { type: String },
-  downloadUrl: { type: String },
-  downloadId: { type: String, unique: true, sparse: true },
-  metaTitle: { type: String },
-  metaDescription: { type: String },
-  metaKeywords: { type: String },
-  ogTitle: { type: String },
-  ogDescription: { type: String },
-  ogImage: { type: String },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 HOMEPAGE SCHEMA
+-------------------------------- */
+const homepageSchema = new mongoose.Schema(
+	{
+		sections: { type: Object, required: true },
+		version: { type: String },
+		downloadUrl: { type: String },
+		downloadId: { type: String, unique: true, sparse: true },
+		metaTitle: { type: String },
+		metaDescription: { type: String },
+		metaKeywords: { type: String },
+		ogTitle: { type: String },
+		ogDescription: { type: String },
+		ogImage: { type: String },
+	},
+	{ timestamps: true }
+);
 
-exports.HomepageModel = mongoose.model('Homepage', homepageMongoSchema);
+export const HomepageModel =
+	mongoose.models.Homepage || mongoose.model("Homepage", homepageSchema);
 
-// App schema
-const appMongoSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  description: { type: String },
-  icon: { type: String },
-  featuredImage: { type: String },
-  sections: { type: Object, default: [] },
-  version: { type: String },
-  downloadUrl: { type: String },
-  downloadId: { type: String, unique: true, sparse: true },
-  metaTitle: { type: String },
-  metaDescription: { type: String },
-  metaKeywords: { type: String },
-  ogTitle: { type: String },
-  ogDescription: { type: String },
-  ogImage: { type: String },
-  content: { type: String },
-  githubUrl: { type: String },
-  websiteUrl: { type: String },
-  isActive: { type: Boolean, default: true, required: true },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 APP SCHEMA
+-------------------------------- */
+const appSchema = new mongoose.Schema(
+	{
+		name: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
+		description: { type: String },
+		icon: { type: String },
+		featuredImage: { type: String },
+		sections: { type: Object, default: [] },
+		version: { type: String },
+		downloadUrl: { type: String },
+		downloadId: { type: String, unique: true, sparse: true },
+		metaTitle: { type: String },
+		metaDescription: { type: String },
+		metaKeywords: { type: String },
+		ogTitle: { type: String },
+		ogDescription: { type: String },
+		ogImage: { type: String },
+		content: { type: String },
+		githubUrl: { type: String },
+		websiteUrl: { type: String },
+		isActive: { type: Boolean, default: true, required: true },
+		author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+	},
+	{ timestamps: true }
+);
 
-exports.AppModel = mongoose.model('App', appMongoSchema);
+export const AppModel =
+	mongoose.models.App || mongoose.model("App", appSchema);
 
-// URL Redirects schema
-const redirectSchema = new mongoose.Schema({
-  sourceUrl: { type: String, required: true, unique: true },
-  targetUrl: { type: String, required: true },
-  statusCode: { type: Number, default: 301, required: true },
-  isPermanent: { type: Boolean, default: true, required: true },
-  isActive: { type: Boolean, default: true, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 REDIRECT SCHEMA
+-------------------------------- */
+const redirectSchema = new mongoose.Schema(
+	{
+		sourceUrl: { type: String, required: true, unique: true },
+		targetUrl: { type: String, required: true },
+		statusCode: { type: Number, default: 301, required: true },
+		isPermanent: { type: Boolean, default: true, required: true },
+		isActive: { type: Boolean, default: true, required: true },
+	},
+	{ timestamps: true }
+);
 
-exports.RedirectModel = mongoose.model('Redirect', redirectSchema);
+export const RedirectModel =
+	mongoose.models.Redirect || mongoose.model("Redirect", redirectSchema);
 
-// Sitemap entries schema
-const sitemapEntrySchema = new mongoose.Schema({
-  url: { type: String, required: true, unique: true },
-  changeFrequency: { type: String, default: 'weekly', required: true },
-  priority: { type: String, default: '0.5', required: true },
-  lastModified: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true, required: true },
-  type: { type: String, default: 'page', required: true },
-  relatedId: { type: mongoose.Schema.Types.ObjectId }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 SITEMAP SCHEMA
+-------------------------------- */
+const sitemapSchema = new mongoose.Schema(
+	{
+		url: { type: String, required: true, unique: true },
+		changeFrequency: { type: String, default: "weekly", required: true },
+		priority: { type: String, default: "0.5", required: true },
+		isActive: { type: Boolean, default: true, required: true },
+		type: { type: String, default: "page", required: true },
+		relatedId: { type: mongoose.Schema.Types.ObjectId },
+	},
+	{ timestamps: true }
+);
 
-exports.SitemapEntryModel = mongoose.model('SitemapEntry', sitemapEntrySchema);
+export const SitemapEntryModel =
+	mongoose.models.SitemapEntry || mongoose.model("SitemapEntry", sitemapSchema);
 
-// Schema.org structured data schema
-const structuredDataSchema = new mongoose.Schema({
-  entityType: { type: String, required: true },
-  entityId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  schemaType: { type: String, required: true },
-  schemaData: { type: Object, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-}, { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } });
+/* -------------------------------
+	 STRUCTURED DATA SCHEMA
+-------------------------------- */
+const structuredDataSchema = new mongoose.Schema(
+	{
+		entityType: { type: String, required: true },
+		entityId: { type: mongoose.Schema.Types.ObjectId, required: true },
+		schemaType: { type: String, required: true },
+		schemaData: { type: Object, required: true },
+	},
+	{ timestamps: true }
+);
 
-exports.StructuredDataModel = mongoose.model('StructuredData', structuredDataSchema);
+export const StructuredDataModel =
+	mongoose.models.StructuredData ||
+	mongoose.model("StructuredData", structuredDataSchema);
+	
+	
+	
+	const homepageSectionSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  image: String,
+});
+
+const HomepageSection =
+  mongoose.models.HomepageSection ||
+  mongoose.model("HomepageSection", homepageSectionSchema);
+
+export { homepageSectionSchema, HomepageSection };
