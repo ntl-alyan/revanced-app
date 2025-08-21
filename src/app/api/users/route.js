@@ -1,3 +1,4 @@
+import { hashPassword } from '@/src/lib/auth-utils';
 import clientPromise from '@/src/lib/mongo';
 import { NextResponse } from 'next/server';
 
@@ -17,3 +18,5 @@ export async function GET() {
     );
   }
 }
+
+

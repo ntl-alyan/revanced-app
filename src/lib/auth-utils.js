@@ -1,5 +1,6 @@
-import { scrypt, timingSafeEqual } from 'crypto';
+import { scrypt, timingSafeEqual,randomBytes } from 'crypto';
 import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
 
 const scryptAsync = promisify(scrypt);
 
@@ -20,5 +21,40 @@ export async function comparePasswords(supplied, stored) {
   } catch (error) {
     console.error('Password comparison error:', error);
     return false;
+  }
+}
+
+export async function hashPassword(password) {
+  try {
+    const salt = randomBytes(16).toString('hex');
+    const buf = (await scryptAsync(password, salt, 64));
+    return `${buf.toString('hex')}.${salt}`;
+  } catch (error) {
+    console.error('Password hashing error:', error);
+    throw new Error('Failed to hash password');
+  }
+}
+
+export async function isAdmin(req) {
+  try {
+    // Get token from cookies or Authorization header
+    const token = req.cookies.get('auth-token')?.value || 
+                 req.headers.get('authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return { isAdmin: false, user: null };
+    }
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    
+    return { 
+      isAdmin: decoded.role === 'admin', 
+      user: decoded 
+    };
+
+  } catch (error) {
+    console.error('Admin check error:', error);
+    return { isAdmin: false, user: null };
   }
 }

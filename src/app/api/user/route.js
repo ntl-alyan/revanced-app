@@ -1,43 +1,45 @@
-import clientPromise from '@/src/lib/mongo';
 import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-export async function GET(request) {
+export async function GET(req) {
   try {
-    // Get session (if using NextAuth)
-    // const session = await getServerSession(authOptions);
-    
-    // if (!session) {
-    //   return NextResponse.json(
-    //     { message: "Not authenticated" },
-    //     { status: 401 }
-    //   );
-    // }
-    
-    // // Connect to MongoDB
+    // Get token from cookies or Authorization header
+    const token = req.cookies.get('auth-token')?.value || 
+                 req.headers.get('authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    // Verify JWT token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    } catch (error) {
+      return NextResponse.json(
+        { message: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // If you need to fetch the full user data from database:
     // const client = await clientPromise;
     // const db = client.db(process.env.MONGODB_DB);
+    // const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.id) });
     
-    // // Get user from database
-    // const usersCollection = db.collection('users');
-    // const user = await usersCollection.findOne({ 
-    //   _id: new ObjectId(session.user.id) 
-    // });
+    // Since JWT already contains user info, we can use that directly
+    // Remove any sensitive fields if they exist in the token
+    const { iat, exp, ...userWithoutJwtFields } = decoded;
     
-    // if (!user) {
-    //   return NextResponse.json(
-    //     { message: "User not found" },
-    //     { status: 404 }
-    //   );
-    // }
+    return NextResponse.json(userWithoutJwtFields);
     
-    // // Remove password from response
-    // const { password, ...userWithoutPassword } = user;
-    
-    return NextResponse.json({});
-  } catch (e) {
-    console.error("Error fetching user:", e);
+  } catch (error) {
+    console.error('User API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch user data' },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
