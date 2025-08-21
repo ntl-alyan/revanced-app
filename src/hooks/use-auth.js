@@ -1,13 +1,11 @@
-import { createContext, ReactNode, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 import {
   useQuery,
   useMutation,
-  UseMutationResult,
 } from "@tanstack/react-query";
 // import { insertUserSchema, UserModel } from "../../shared/schema"
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "./use-toast";
-import { z } from "zod";
 
 
 // const registerSchema = insertUserSchema.pick({
@@ -35,7 +33,7 @@ export function AuthProvider({ children }) {
   } = useQuery({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    select: (data) => data?._doc || null, // fallback if strict types break
+    select: (data) => data || null,
   });
 
   const loginMutation = useMutation({
@@ -118,6 +116,7 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }

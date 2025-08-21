@@ -1,4 +1,4 @@
-import dbConnect from "@/src/lib/mongo";
+import dbConnect from "@/src/lib/mongo-connect";
 import { HomepageModel } from "@/src/shared/schema";
 import { NextResponse } from "next/server";
 

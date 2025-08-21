@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
+"use client";
+
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,31 +16,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { DashboardHeader } from "@/components/ui/dashboard-header";
-import { insertRedirectSchema, Redirect } from "@shared/schema";
-
-// Extend the schema with additional validation
-const formSchema = insertRedirectSchema.extend({
-  sourceUrl: z.string().min(1, "Source URL is required").max(255),
-  targetUrl: z.string().min(1, "Target URL is required").max(255),
-});
+} from "@/src/components/ui/select";
+import { useToast } from "@/src/hooks/use-toast";
+import { queryClient, apiRequest } from "@/src/lib/queryClient";
+import { DashboardHeader } from "@/src/components/ui/dashboard-header";
 
 export default function EditRedirectPage() {
-  const { id } = useParams();
-  const [, setLocation] = useLocation();
+  const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
+
+  // ✅ Ensure id is always string
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const isEditing = id !== "new" && id !== undefined;
 
   // Fetch redirect if editing
@@ -47,9 +45,8 @@ export default function EditRedirectPage() {
     enabled: isEditing,
   });
 
-  // Form
+  // Form setup
   const form = useForm({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       sourceUrl: "",
       targetUrl: "",
@@ -59,7 +56,7 @@ export default function EditRedirectPage() {
     },
   });
 
-  // Update form values when redirect data is loaded
+  // Reset form when redirect data is loaded
   useEffect(() => {
     if (redirect) {
       form.reset({
@@ -84,7 +81,7 @@ export default function EditRedirectPage() {
         title: "Redirect created",
         description: "The redirect has been created successfully.",
       });
-      setLocation("/admin/redirects");
+      router.push("/admin/redirects");
     },
     onError: (error) => {
       toast({
@@ -113,7 +110,7 @@ export default function EditRedirectPage() {
         title: "Redirect updated",
         description: "The redirect has been updated successfully.",
       });
-      setLocation("/admin/redirects");
+      router.push("/admin/redirects");
     },
     onError: (error) => {
       toast({
@@ -124,7 +121,7 @@ export default function EditRedirectPage() {
     },
   });
 
-  // Form submission
+  // Submit handler
   const onSubmit = (data) => {
     if (isEditing) {
       updateMutation.mutate(data);
@@ -145,10 +142,7 @@ export default function EditRedirectPage() {
             : "Create a new URL redirect to maintain SEO."
         }
       >
-        <Button
-          variant="outline"
-          onClick={() => setLocation("/admin/redirects")}
-        >
+        <Button variant="outline" onClick={() => router.push("/admin/redirects")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Redirects
         </Button>
       </DashboardHeader>
@@ -161,6 +155,7 @@ export default function EditRedirectPage() {
         <div className="bg-card rounded-lg p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Source URL */}
               <FormField
                 control={form.control}
                 name="sourceUrl"
@@ -182,6 +177,7 @@ export default function EditRedirectPage() {
                 )}
               />
 
+              {/* Target URL */}
               <FormField
                 control={form.control}
                 name="targetUrl"
@@ -202,6 +198,7 @@ export default function EditRedirectPage() {
                 )}
               />
 
+              {/* Status code & Permanent */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -221,18 +218,10 @@ export default function EditRedirectPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="301">
-                            301 (Moved Permanently)
-                          </SelectItem>
-                          <SelectItem value="302">
-                            302 (Found/Temporary)
-                          </SelectItem>
-                          <SelectItem value="307">
-                            307 (Temporary Redirect)
-                          </SelectItem>
-                          <SelectItem value="308">
-                            308 (Permanent Redirect)
-                          </SelectItem>
+                          <SelectItem value="301">301 (Moved Permanently)</SelectItem>
+                          <SelectItem value="302">302 (Found/Temporary)</SelectItem>
+                          <SelectItem value="307">307 (Temporary Redirect)</SelectItem>
+                          <SelectItem value="308">308 (Permanent Redirect)</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
@@ -266,6 +255,7 @@ export default function EditRedirectPage() {
                 />
               </div>
 
+              {/* Active */}
               <FormField
                 control={form.control}
                 name="isActive"
@@ -287,6 +277,7 @@ export default function EditRedirectPage() {
                 )}
               />
 
+              {/* Submit */}
               <div className="flex justify-end">
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (

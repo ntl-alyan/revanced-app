@@ -1,70 +1,45 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { z } from "zod";
-import clientPromise from "@/src/lib/mongo";
+import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-// Schema validation
-const createUserSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  role: z.enum(["admin", "editor"]),
-});
-
-export async function POST(req) {
+export async function GET(req) {
   try {
-    const body = await req.json();
+    // Get token from cookies or Authorization header
+    const token = req.cookies.get('auth-token')?.value || 
+                 req.headers.get('authorization')?.replace('Bearer ', '');
 
-    // Validate input
-    const parsed = createUserSchema.safeParse(body);
-    if (!parsed.success) {
+    if (!token) {
       return NextResponse.json(
-        { error: parsed.error.flatten().fieldErrors },
-        { status: 400 }
+        { message: "Not authenticated" },
+        { status: 401 }
       );
     }
 
-    const { username, email, password, firstName, lastName, role } = parsed.data;
-
-    // Connect to Mongo
-   
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB); 
-    const users = db.collection("users");
-
-    // Check if user already exists
-    const existing = await users.findOne({ email });
-    if (existing) {
+    // Verify JWT token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    } catch (error) {
       return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 400 }
+        { message: "Invalid token" },
+        { status: 401 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert new user
-    const result = await users.insertOne({
-      username,
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      role,
-      createdAt: new Date(),
-    });
-
+    // If you need to fetch the full user data from database:
+    // const client = await clientPromise;
+    // const db = client.db(process.env.MONGODB_DB);
+    // const user = await db.collection('users').findOne({ _id: new ObjectId(decoded.id) });
+    
+    // Since JWT already contains user info, we can use that directly
+    // Remove any sensitive fields if they exist in the token
+    const { iat, exp, ...userWithoutJwtFields } = decoded;
+    
+    return NextResponse.json(userWithoutJwtFields);
+    
+  } catch (error) {
+    console.error('User API error:', error);
     return NextResponse.json(
-      { message: "User created successfully", userId: result.insertedId },
-      { status: 201 }
-    );
-  } catch (err) {
-    console.error("CreateUser API Error:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
