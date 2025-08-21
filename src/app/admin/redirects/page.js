@@ -43,7 +43,7 @@ export default function RedirectsPage() {
   // Fetch redirects
   const { data: redirects = [], isLoading } = useQuery({
     queryKey: ["/api/redirects"],
-    staleTime: 1000 * 60, // 1 minute
+    // staleTime: 1000 * 60, // 1 minute
     queryFn: async () => {
       const res = await fetch("/api/redirects");
       if (!res.ok) throw new Error("Network response was not ok");
@@ -146,7 +146,7 @@ export default function RedirectsPage() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              router.push(`/admin/redirects/edit/${row.original.id}`)
+              router.push(`/admin/redirects/edit/${row.original._id}`)
             }
           >
             <Edit size={16} />
@@ -216,7 +216,7 @@ export default function RedirectsPage() {
           </p>
           <Button
             className="mt-4"
-            onClick={() => router.push("/admin/redirects/new")}
+            onClick={() => router.push("/admin/redirects/edit/new")}
           >
             <Plus className="mr-2 h-4 w-4" /> Add Redirect
           </Button>

@@ -41,8 +41,13 @@ export default function EditRedirectPage() {
 
   // Fetch redirect if editing
   const { data: redirect, isLoading: isLoadingRedirect } = useQuery({
-    queryKey: ["/api/redirects", Number(id)],
+    queryKey: ["/api/redirects", id],
     enabled: isEditing,
+    queryFn: async () => {
+      const res = await fetch(`/api/redirects/${id}`);
+      if (!res.ok) throw new Error("Network response was not ok");
+      return res.json();
+    },
   });
 
   // Form setup
@@ -73,7 +78,7 @@ export default function EditRedirectPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/redirects", data);
-      return await res.json();
+      return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
@@ -99,17 +104,17 @@ export default function EditRedirectPage() {
         throw new Error("Cannot update a new redirect. Use create instead.");
       }
       const res = await apiRequest("PUT", `/api/redirects/${id}`, data);
-      return await res.json();
+      return await res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
-      queryClient.invalidateQueries({
-        queryKey: ["/api/redirects", Number(id)],
-      });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/redirects"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/redirects", id] });
+
       toast({
         title: "Redirect updated",
         description: "The redirect has been updated successfully.",
       });
+
       router.push("/admin/redirects");
     },
     onError: (error) => {
@@ -142,7 +147,10 @@ export default function EditRedirectPage() {
             : "Create a new URL redirect to maintain SEO."
         }
       >
-        <Button variant="outline" onClick={() => router.push("/admin/redirects")}>
+        <Button
+          variant="outline"
+          onClick={() => router.push("/admin/redirects")}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Redirects
         </Button>
       </DashboardHeader>
@@ -218,10 +226,18 @@ export default function EditRedirectPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="301">301 (Moved Permanently)</SelectItem>
-                          <SelectItem value="302">302 (Found/Temporary)</SelectItem>
-                          <SelectItem value="307">307 (Temporary Redirect)</SelectItem>
-                          <SelectItem value="308">308 (Permanent Redirect)</SelectItem>
+                          <SelectItem value="301">
+                            301 (Moved Permanently)
+                          </SelectItem>
+                          <SelectItem value="302">
+                            302 (Found/Temporary)
+                          </SelectItem>
+                          <SelectItem value="307">
+                            307 (Temporary Redirect)
+                          </SelectItem>
+                          <SelectItem value="308">
+                            308 (Permanent Redirect)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
