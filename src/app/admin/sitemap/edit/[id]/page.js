@@ -1,11 +1,10 @@
+"use client";
 import { useEffect } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams, useRouter } from "next/navigation"; // ✅ next/navigation
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,64 +13,60 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { DashboardHeader } from "@/components/ui/dashboard-header";
-import { insertSitemapEntrySchema, SitemapEntry } from "@shared/schema";
-
-// Extend the schema with additional validation
-const formSchema = insertSitemapEntrySchema.extend({
-  url: z.string().min(1, "URL is required").max(255),
-  type: z.string().min(1, "Type is required"),
-  changeFrequency: z.string().min(1, "Change frequency is required"),
-  priority: z.string().min(1, "Priority is required"),
-});
+} from "@/src/components/ui/select";
+import { useToast } from "@/src/hooks/use-toast";
+import { queryClient, apiRequest } from "@/src/lib/queryClient";
+import { DashboardHeader } from "@/src/components/ui/dashboard-header";
 
 export default function EditSitemapEntryPage() {
-  const { id } = useParams();
-  const [, setLocation] = useLocation();
+  const params = useParams(); // ✅ access params
+  const router = useRouter(); // ✅ use router for navigation
   const { toast } = useToast();
+
+  const id = params?.id;
   const isEditing = id !== "new" && id !== undefined;
 
   // Fetch sitemap entry if editing
   const { data: entry, isLoading: isLoadingEntry } = useQuery({
     queryKey: [`/api/sitemap/${id}`],
     enabled: isEditing,
+    queryFn: async () => {
+      const res = await fetch(`/api/sitemap/${id}`);
+      if (!res.ok) throw new Error("Network response was not ok");
+      return res.json();
+    },
   });
 
   // Form
   const form = useForm({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       url: "",
       type: "page",
       changeFrequency: "weekly",
       priority: "0.5",
       isActive: true,
-      // relatedId: "",
     },
   });
 
-  // Update form values when entry data is loaded
+  // Reset values when editing existing entry
   useEffect(() => {
     if (entry) {
+      console.log(entry);
       form.reset({
-        url: entry.url,
-        type: entry.type,
-        changeFrequency: entry.changeFrequency,
-        priority: entry.priority,
-        isActive: entry.isActive,
-        // relatedId: entry.relatedId,
+        url: entry.url ?? "",
+        type: (entry.type ?? "page").toLowerCase(), // ensure lowercase
+        changeFrequency: (entry.changeFrequency ?? "weekly").toLowerCase(),
+        priority: String(entry.priority ?? "0.5"), // force string
+        isActive: Boolean(entry.isActive), // ensure boolean
       });
     }
   }, [entry, form]);
@@ -80,15 +75,15 @@ export default function EditSitemapEntryPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/sitemap", data);
-      return await res.json();
+      return await res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/sitemap"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/sitemap"] });
       toast({
         title: "Sitemap entry created",
         description: "The sitemap entry has been created successfully.",
       });
-      setLocation("/admin/sitemap");
+      router.push("/admin/sitemap"); // ✅ replaced setLocation
     },
     onError: (error) => {
       toast({
@@ -108,16 +103,16 @@ export default function EditSitemapEntryPage() {
         );
       }
       const res = await apiRequest("PUT", `/api/sitemap/${id}`, data);
-      return await res.json();
+      return await res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/sitemap"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/sitemap", Number(id)] });
+    onSuccess:async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/sitemap"] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/sitemap/${id}`] });
       toast({
         title: "Sitemap entry updated",
         description: "The sitemap entry has been updated successfully.",
       });
-      setLocation("/admin/sitemap");
+      router.push("/admin/sitemap"); // ✅ replaced setLocation
     },
     onError: (error) => {
       toast({
@@ -128,9 +123,8 @@ export default function EditSitemapEntryPage() {
     },
   });
 
-  // Form submission
+  // Handle submit
   const onSubmit = (data) => {
-    console.log(data);
     if (isEditing) {
       updateMutation.mutate(data);
     } else {
@@ -150,7 +144,7 @@ export default function EditSitemapEntryPage() {
             : "Create a new sitemap entry to improve search engine visibility."
         }
       >
-        <Button variant="outline" onClick={() => setLocation("/admin/sitemap")}>
+        <Button variant="outline" onClick={() => router.push("/admin/sitemap")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Sitemap
         </Button>
       </DashboardHeader>
@@ -162,12 +156,8 @@ export default function EditSitemapEntryPage() {
       ) : (
         <div className="bg-card rounded-lg p-6">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit, (errors) => {
-                console.log("Validation errors", errors);
-              })}
-              className="space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* URL */}
               <FormField
                 control={form.control}
                 name="url"
@@ -188,7 +178,7 @@ export default function EditSitemapEntryPage() {
                   </FormItem>
                 )}
               />
-
+              {/* Type, Frequency, Priority */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
@@ -198,7 +188,7 @@ export default function EditSitemapEntryPage() {
                       <FormLabel>Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || entry?.type} // keep controlled
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -213,9 +203,6 @@ export default function EditSitemapEntryPage() {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        The type of content this URL represents.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -229,7 +216,7 @@ export default function EditSitemapEntryPage() {
                       <FormLabel>Change Frequency</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || entry?.changeFrequency} // keep controlled
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -246,9 +233,6 @@ export default function EditSitemapEntryPage() {
                           <SelectItem value="never">Never</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        How frequently the page is likely to change.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -262,7 +246,7 @@ export default function EditSitemapEntryPage() {
                       <FormLabel>Priority</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || entry?.priority} // keep controlled
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -282,16 +266,13 @@ export default function EditSitemapEntryPage() {
                           <SelectItem value="0.1">0.1 (Lowest)</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        The priority of this URL relative to other URLs on your
-                        site.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
 
+              {/* isActive */}
               <FormField
                 control={form.control}
                 name="isActive"
@@ -314,6 +295,7 @@ export default function EditSitemapEntryPage() {
                 )}
               />
 
+              {/* Submit */}
               <div className="flex justify-end">
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && (
