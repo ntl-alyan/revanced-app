@@ -22,7 +22,7 @@ export const CustomBreadcrumb = ({ items }) => {
                   <BreadcrumbPage>{item.label}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link to={item.link}>{item.label}</Link>
+                    <Link href={item.link}>{item.label}</Link>
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
