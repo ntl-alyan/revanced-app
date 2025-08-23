@@ -1,35 +1,33 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
-import { appSectionSchema } from "@shared/schema";
-import { z } from "zod";
 import { 
   Card, 
   CardContent, 
   CardHeader, 
   CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
 import { 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
-} from "@/components/ui/select";
+} from "@/src/components/ui/select";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import { 
   Dialog, 
   DialogContent, 
   DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle} from "@/components/ui/dialog";
+  DialogTitle} from "@/src/components/ui/dialog";
 import {
   MoveUp,
   MoveDown,
@@ -239,10 +237,10 @@ const SectionItem = memo(({
 });
 
 export function AppSectionsEditor({ sections, setSections }) {
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [currentSection, setCurrentSection] = useState<number | null>(null);
-  const [currentItem, setCurrentItem] = useState<number | null>(null);
-  const [localSections, setLocalSections] = useState<z.infer<typeof appSectionSchema>[]>(sections);
+  const [selectedIcon, setSelectedIcon] = useState(null);
+  const [currentSection, setCurrentSection] = useState(null);
+  const [currentItem, setCurrentItem] = useState(null);
+  const [localSections, setLocalSections] = useState(sections);
   
   // Keep local sections in sync with parent sections when they change externally
   useEffect(() => {

@@ -1,70 +1,50 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { useLocation, useParams } from "wouter";
-import { z } from "zod";
-import Head from 'next/head'
+import { useParams, useRouter } from "next/navigation"; // ✅ use next/navigation
+import Head from "next/head";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import {
-  insertAppSchema,
-  appSectionSchema,
-  App,
-  InsertApp
-} from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { 
-  Form, 
+    Form, 
   FormControl, 
   FormDescription, 
   FormField, 
   FormItem, 
   FormLabel, 
   FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppSectionsEditor } from "@/components/apps/app-sections-editor";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Switch } from "@/src/components/ui/switch";
+import { Button } from "@/src/components/ui/button";
+import { AppSectionsEditor } from "@/src/components/apps/app-sections-editor";
+import { TranslationManager } from "@/src/components/language/translation-manager";
+import { useToast } from "@/src/hooks/use-toast";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { AlertCircle, Loader2, Languages, CookingPot } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TranslationManager } from "@/components/language/translation-manager";
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 
 // Function to generate a random download ID
-const generateRandomId = () => {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
-};
+const generateRandomId = () =>
+  Math.random().toString(36).substring(2, 15) +
+  Math.random().toString(36).substring(2, 15);
 
-// Form schema with validation
-const formSchema = insertAppSchema.extend({
-  slug: z.string().min(3, { message: "Slug must be at least 3 characters" }).regex(/^[a-z0-9-]+$/, {
-    message: "Slug can only contain lowercase letters, numbers, and hyphens",
-  }),
-  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
-  downloadId: z.string().optional(),
-  metaKeywords: z.string().optional(),
-  ogTitle: z.string().optional(),
-  ogDescription: z.string().optional(),
-  ogImage: z.string().optional(),
-});
 
 export default function EditAppPage() {
   const { toast } = useToast();
-  const params = useParams();
-  const [, navigate] = useLocation();
+  const params = useParams(); // ✅ Next.js params
+  const router = useRouter(); // ✅ router.replace / router.push
   const [activeTab, setActiveTab] = useState("basic");
-  const [sections, setSections] = useState<z.infer<typeof appSectionSchema>[]>([]);
-  const id = params.id;
+  const [sections, setSections] = useState([]);
+  const id = params?.id;
 
-  // Initialize form with default values
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  // Initialize form
+  const form = useForm({
     defaultValues: {
       name: "",
       slug: "",
@@ -79,13 +59,19 @@ export default function EditAppPage() {
       ogTitle: "",
       ogDescription: "",
       ogImage: "",
-      isActive: true
+      isActive: true,
     },
   });
 
   // Query to get app data
-  const { data: app, isLoading, error } = useQuery<App>({
+  const { data: app, isLoading, error } = useQuery({
     queryKey: [`/api/apps/${id}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/apps/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch apps");
+
+      return res.json();
+    },
   });
 
   // Update form when app data is fetched
@@ -97,7 +83,7 @@ export default function EditAppPage() {
         description: app.description,
         version: app.version,
         downloadUrl: app.downloadUrl,
-        downloadId: app.downloadId || generateRandomId(), // Use existing ID or generate a new one if missing
+        downloadId: app.downloadId || generateRandomId(),
         icon: app.icon,
         featuredImage: app.featuredImage,
         metaTitle: app.metaTitle,
@@ -109,43 +95,23 @@ export default function EditAppPage() {
         isActive: app.isActive,
       });
 
-      // Parse and set sections if available
       if (app.sections) {
         try {
-          // console.log("Loading sections from app data:", app.sections);
-          
-          // Handle different possible section formats
           let parsedSections;
           if (Array.isArray(app.sections)) {
-            // If it's already an array, use it directly
             parsedSections = app.sections;
-            // console.log("Sections already in array format");
-          } else if (typeof app.sections === 'string') {
-            // If it's a JSON string, parse it
+          } else if (typeof app.sections === "string") {
             parsedSections = JSON.parse(app.sections);
-            // console.log("Parsed sections from string:", parsedSections);
-          } else if (typeof app.sections === 'object') {
-            // If it's an object but not an array, try to use it
+          } else if (typeof app.sections === "object") {
             parsedSections = app.sections;
-            // console.log("Using sections as object:", parsedSections);
           } else {
-            console.warn("Sections in unexpected format:", typeof app.sections);
             parsedSections = [];
           }
-          
-          // Ensure we always have a valid array
-          if (!Array.isArray(parsedSections)) {
-            console.warn("Parsed sections is not an array, using empty array");
-            parsedSections = [];
-          }
-          
-          setSections(parsedSections);
-        } catch (e) {
-          console.error("Error parsing sections:", e);
+          setSections(Array.isArray(parsedSections) ? parsedSections : []);
+        } catch {
           setSections([]);
         }
       } else {
-        // console.log("No sections data available, using empty array");
         setSections([]);
       }
     }
@@ -154,36 +120,19 @@ export default function EditAppPage() {
   // Update app mutation
   const mutation = useMutation({
     mutationFn: async (data) => {
+      const appData = {
+        ...data,
+        sections: sections.length > 0 ? sections : [],
+      };
+
       try {
-        // Prepare app data with proper handling of sections
-        const appData = {
-          ...data,
-          sections: sections.length > 0 ? sections : []
-        };
-        
-        // Log the data being sent for debugging
-        // console.log("Updating app with data:", JSON.stringify(appData));
-        
-        // Make sure sections is properly serializable
-        try {
-          // Test if sections can be properly serialized
-          JSON.stringify(appData.sections);
-          // console.log("Sections successfully serialized");
-        } catch (serializationError) {
-          console.error("Sections serialization error:", serializationError);
-          // Provide a fallback empty array
-          appData.sections = [];
-        }
-        
-        // Perform the API request
-        const res = await apiRequest("PATCH", `/api/apps/${id}`, appData);
-        const updatedApp = await res.json();
-        // console.log("App updated successfully:", updatedApp);
-        return updatedApp;
-      } catch (error) {
-        console.error("Error updating app:", error);
-        throw error; // Re-throw to trigger onError callback
+        JSON.stringify(appData.sections);
+      } catch {
+        appData.sections = [];
       }
+
+      const res = await apiRequest("PATCH", `/api/apps/${id}`, appData);
+      return res;
     },
     onSuccess: () => {
       toast({
@@ -192,7 +141,7 @@ export default function EditAppPage() {
       });
       queryClient.invalidateQueries({ queryKey: [`/api/apps/${id}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/apps"] });
-      navigate("/admin/apps");
+      router.push("/admin/apps"); // ✅ navigate replaced
     },
     onError: (error) => {
       toast({
@@ -204,27 +153,23 @@ export default function EditAppPage() {
   });
 
   const onSubmit = (data) => {
-    // Only submit the form if the submit button was actually clicked
-    // This prevents auto-submission when sections are added
-    if (document.activeElement?.getAttribute('type') === 'submit') {
+    if (document.activeElement?.getAttribute("type") === "submit") {
       mutation.mutate(data);
     }
   };
 
-  // Generate slug from name
   const generateSlug = () => {
     const name = form.getValues("name");
     if (name) {
       const slug = name
         .toLowerCase()
-        .replace(/[^\w\s-]/g, "") // Remove special chars except whitespace and hyphen
-        .replace(/\s+/g, "-") // Replace whitespace with hyphen
-        .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
       form.setValue("slug", slug);
     }
   };
 
-  // Show error if app not found
   if (error) {
     return (
       <MainLayout>
@@ -240,14 +185,12 @@ export default function EditAppPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Failed to load app data. The app may not exist or you don't have permission to edit it.
+            Failed to load app data. The app may not exist or you don't have
+            permission to edit it.
           </AlertDescription>
         </Alert>
         <div className="mt-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate("/admin/apps")}
-          >
+          <Button variant="outline" onClick={() => router.push("/admin/apps")}>
             Back to Apps
           </Button>
         </div>
@@ -255,7 +198,6 @@ export default function EditAppPage() {
     );
   }
 
-  // Show loading state
   if (isLoading) {
     return (
       <MainLayout>
@@ -287,7 +229,7 @@ export default function EditAppPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+         <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 lg:w-2/3">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="content">Content</TabsTrigger>
@@ -694,7 +636,7 @@ export default function EditAppPage() {
               {app ? (
                 <TranslationManager 
                   contentType="app"
-                  contentId={app.id}
+                  contentId={app._id}
                   originalData={app}
                 />
               ) : (
@@ -704,23 +646,15 @@ export default function EditAppPage() {
               )}
             </TabsContent>
           </Tabs>
-          
+
           <div className="flex justify-end gap-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate("/admin/apps")}
-            >
+            <Button type="button" variant="outline" onClick={() => router.push("/admin/apps")}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={mutation.isPending}
-              className="min-w-24"
-            >
+            <Button type="submit" disabled={mutation.isPending} className="min-w-24">
               {mutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (

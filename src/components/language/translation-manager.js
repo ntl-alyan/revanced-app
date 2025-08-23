@@ -64,14 +64,14 @@ export function TranslationManager({
   originalData,
 }) {
   const { toast } = useToast();
-  const [selectedLanguage, setSelectedLanguage] = useState<number | null>(null);
-  const [newTranslationLanguage, setNewTranslationLanguage] = useState<number | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  const [newTranslationLanguage, setNewTranslationLanguage] = useState(null);
   const [translations, setTranslations] = useState([]);
-  const [editingTranslation, setEditingTranslation] = useState<Translation | null>(null);
+  const [editingTranslation, setEditingTranslation] = useState(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [translationToDelete, setTranslationToDelete] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("list");
+  const [translationToDelete, setTranslationToDelete] = useState(null);
+  const [activeTab, setActiveTab] = useState("list");
 
   // Get base endpoint for translations
   const baseEndpoint = contentType === "homepage" 
@@ -81,6 +81,12 @@ export function TranslationManager({
   // Fetch available languages
   const { data: languages, isLoading: isLoadingLanguages } = useQuery({
     queryKey: ["/api/languages"],
+     queryFn: async () => {
+      const res = await fetch(`/api/languages`);
+      if (!res.ok) throw new Error("Failed to fetch languages");
+
+      return res.json();
+    },
   });
 
   // Fetch translations for this content
@@ -135,13 +141,14 @@ export function TranslationManager({
 
   // Get available languages for new translations
   const availableLanguages = languages?.filter(
-    lang => !translatedLanguageIds.has(lang.id)
+    lang => !translatedLanguageIds.has(lang._id)
   ) || [];
 
   // Create translation mutation
   const createTranslationMutation = useMutation({
     mutationFn: async (data) => {
       try {
+        console.log(data)
         const res = await apiRequest("POST", baseEndpoint, data);
         if (!res.ok) {
           const contentType = res.headers.get('content-type');
@@ -321,7 +328,7 @@ export function TranslationManager({
   // Handle updating translation status
   const handleUpdateStatus = (translation, isActive) => {
     const data = { isActive };
-    updateTranslationMutation.mutate({ id: translation.id, data });
+    updateTranslationMutation.mutate({ id: translation._id, data });
   };
 
   // Start editing a translation
@@ -335,7 +342,7 @@ export function TranslationManager({
     if (!editingTranslation) return;
 
     updateTranslationMutation.mutate({
-      id: editingTranslation.id,
+      id: editingTranslation,
       data: editingTranslation,
     });
   };
@@ -349,13 +356,13 @@ export function TranslationManager({
 
   // Get language name by ID
   const getLanguageName = (id) => {
-    const language = languages?.find(lang => lang.id === id);
+    const language = languages?.find(lang => lang._id === id);
     return language ? language.name : "Unknown";
   };
 
   // Get language flag by ID
   const getLanguageFlag = (id) => {
-    const language = languages?.find(lang => lang.id === id);
+    const language = languages?.find(lang => lang._id === id);
     return language ? language.flag : "🏳️";
   };
 
@@ -396,7 +403,7 @@ export function TranslationManager({
                 <Label htmlFor="language">Language</Label>
                 <Select
                   value={newTranslationLanguage?.toString() || ""}
-                  onValueChange={(value) => setNewTranslationLanguage(parseInt(value))}
+                  onValueChange={(value) => setNewTranslationLanguage(value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a language" />
@@ -408,7 +415,7 @@ export function TranslationManager({
                       </div>
                     ) : (
                       availableLanguages.map((language) => (
-                        <SelectItem key={language.id} value={language.id.toString()}>
+                        <SelectItem key={language._id} value={language._id}>
                           <div className="flex items-center gap-2">
                             <span>{language.flag}</span>
                             <span>{language.name}</span>
@@ -474,7 +481,7 @@ export function TranslationManager({
             <div className="space-y-4">
               {translations.map((translation) => (
                 <div
-                  key={translation.id}
+                  key={translation._id}
                   className="flex items-center justify-between p-4 rounded-lg border bg-card"
                 >
                   <div className="flex items-center gap-3">
@@ -514,7 +521,7 @@ export function TranslationManager({
                       Edit
                     </Button>
                     <AlertDialog
-                      open={isDeleteDialogOpen && translationToDelete === translation.id}
+                      open={isDeleteDialogOpen && translationToDelete === translation._id}
                       onOpenChange={(open) => {
                         setIsDeleteDialogOpen(open);
                         if (!open) setTranslationToDelete(null);
@@ -524,7 +531,7 @@ export function TranslationManager({
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => setTranslationToDelete(translation.id)}
+                          onClick={() => setTranslationToDelete(translation._id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

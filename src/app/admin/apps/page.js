@@ -1,8 +1,9 @@
+"use client"
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from 'next/link'
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
 import Head from 'next/head'
 import { 
   AppWindow, 
@@ -15,15 +16,15 @@ import {
   FileDown,
   Eye
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/src/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +32,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/src/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,12 +42,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+} from "@/src/components/ui/alert-dialog";
+import { Badge } from "@/src/components/ui/badge";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { useToast } from "@/src/hooks/use-toast";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function AppsPage() {
   const { toast } = useToast();
@@ -57,6 +58,12 @@ export default function AppsPage() {
   // Fetch apps
   const { data: apps, isLoading } = useQuery({
     queryKey: ["/api/apps"],
+    queryFn: async () => {
+      const res = await fetch("/api/apps");
+      if (!res.ok) throw new Error("Failed to fetch apps");
+
+      return res.json();
+    },
   });
 
   // Delete app mutation
@@ -175,7 +182,7 @@ export default function AppsPage() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link to={`/admin/apps/edit/${app._id}`} className="cursor-pointer">
+                          <Link href={`/admin/apps/edit/${app._id}`} className="cursor-pointer">
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </Link>
@@ -211,7 +218,7 @@ export default function AppsPage() {
                 </CardHeader>
                 <CardFooter className="flex justify-between">
                   <Button variant="outline" asChild className="gap-2">
-                    <Link to={`/admin/apps/edit/${app._id}`}>
+                    <Link href={`/admin/apps/edit/${app._id}`}>
                       <Edit className="h-4 w-4" />
                       Edit
                     </Link>
@@ -246,7 +253,7 @@ export default function AppsPage() {
             </p>
             {!searchTerm && (
               <Button asChild className="mt-4">
-                <Link to="/admin/apps/create">Create App</Link>
+                <Link href="/admin/apps/create">Create App</Link>
               </Button>
             )}
           </div>
