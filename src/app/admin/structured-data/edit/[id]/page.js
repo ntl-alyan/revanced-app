@@ -1,11 +1,11 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams, useRouter } from "next/navigation"; // ✅ use Next.js hooks
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { ArrowLeft, Loader2, Check, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,94 +14,86 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { CustomBreadcrumb } from "@/components/ui/custom-breadcrumb";
-import { insertStructuredDataSchema, StructuredData } from "@shared/schema";
-
-// Extend the schema with additional validation
-const formSchema = insertStructuredDataSchema.extend({
-  schemaData: z.string().min(1, "Schema data is required").refine(
-    (data) => {
-      try {
-        JSON.parse(data);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
-    {
-      message: "Invalid JSON format",
-    }
-  ),
-});
+} from "@/src/components/ui/select";
+import { useToast } from "@/src/hooks/use-toast";
+import { queryClient, apiRequest } from "@/src/lib/queryClient";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
+import { CustomBreadcrumb } from "@/src/components/ui/custom-breadcrumb";
 
 export default function EditStructuredDataPage() {
-  const { id } = useParams();
-  const [, setLocation] = useLocation();
+  const params = useParams(); // ✅ Next.js params
+  const id = params?.id;
+  const router = useRouter(); // ✅ replace setLocation
   const { toast } = useToast();
   const isEditing = id !== "new" && id !== undefined;
-  const [jsonValid, setJsonValid] = useState<boolean | null>(null);
+  const [jsonValid, setJsonValid] = useState(null);
 
   // Fetch structured data if editing
   const { data: structuredData, isLoading: isLoadingData } = useQuery({
-    queryKey: ["/api/structured-data", Number(id)],
+    queryKey: ["/api/structured-data", id],
     enabled: isEditing,
+    queryFn: async () => {
+      const res = await fetch(`/api/structured-data/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch structured data");
+      return res.json();
+    },
   });
 
   // Form
   const form = useForm({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       entityType: "",
       entityId: 0,
       schemaType: "WebPage",
-      schemaData: "{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"WebPage\",\n  \"name\": \"Page Title\"\n}",
+      schemaData: `{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Page Title"
+}`,
     },
   });
 
   // Update form values when data is loaded
   useEffect(() => {
     if (structuredData) {
-      // Parse the schema data from JSON to get a proper string
       let schemaData = "";
       try {
-        schemaData = typeof structuredData.schemaData === 'string'
-          ? structuredData.schemaData
-          : JSON.stringify(structuredData.schemaData, null, 2);
-      } catch (error) {
-        schemaData = "{}"; // Default empty JSON if invalid
+        schemaData =
+          typeof structuredData.schemaData === "string"
+            ? structuredData.schemaData
+            : JSON.stringify(structuredData.schemaData, null, 2);
+      } catch {
+        schemaData = "{}";
       }
-      
+
+      console.log(structuredData);
       form.reset({
         entityType: structuredData.entityType,
         entityId: structuredData.entityId,
-        schemaType: structuredData.schemaType || 'WebPage', // Provide default if not present
-        schemaData: schemaData,
+        schemaType: structuredData.schemaType,
+        schemaData,
       });
       validateJson(schemaData);
     }
   }, [structuredData, form]);
 
-  // Validate JSON as user types
+  // Validate JSON
   const validateJson = (json) => {
     try {
       JSON.parse(json);
       setJsonValid(true);
       return true;
-    } catch (e) {
+    } catch {
       setJsonValid(false);
       return false;
     }
@@ -111,7 +103,7 @@ export default function EditStructuredDataPage() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const res = await apiRequest("POST", "/api/structured-data", data);
-      return await res.json();
+      return await res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/structured-data"] });
@@ -119,7 +111,7 @@ export default function EditStructuredDataPage() {
         title: "Structured data created",
         description: "The structured data has been created successfully.",
       });
-      setLocation("/admin/structured-data");
+      router.push("/admin/structured-data"); // ✅ replace setLocation
     },
     onError: (error) => {
       toast({
@@ -134,19 +126,23 @@ export default function EditStructuredDataPage() {
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       if (!isEditing || id === "new") {
-        throw new Error("Cannot update a new structured data entry. Use create instead.");
+        throw new Error(
+          "Cannot update a new structured data entry. Use create instead."
+        );
       }
       const res = await apiRequest("PUT", `/api/structured-data/${id}`, data);
-      return await res.json();
+      return await res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/structured-data"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/structured-data", Number(id)] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/structured-data", Number(id)],
+      });
       toast({
         title: "Structured data updated",
         description: "The structured data has been updated successfully.",
       });
-      setLocation("/admin/structured-data");
+      router.push("/admin/structured-data"); // ✅ replace setLocation
     },
     onError: (error) => {
       toast({
@@ -177,14 +173,14 @@ export default function EditStructuredDataPage() {
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  // Format JSON for better display
+  // Format JSON
   const formatJson = () => {
     try {
       const jsonData = form.getValues("schemaData");
       const formatted = JSON.stringify(JSON.parse(jsonData), null, 2);
       form.setValue("schemaData", formatted);
       validateJson(formatted);
-    } catch (e) {
+    } catch {
       toast({
         title: "Invalid JSON",
         description: "Unable to format: The JSON is invalid.",
@@ -199,13 +195,18 @@ export default function EditStructuredDataPage() {
         <div className="mb-4">
           <CustomBreadcrumb
             items={[
-              { label: 'Home', link: '/admin' },
-              { label: 'Structured Data', link: '/admin/structured-data' },
-              { label: isEditing ? 'Edit Structured Data' : 'Create Structured Data', link: '#' }
+              { label: "Home", link: "/admin" },
+              { label: "Structured Data", link: "/admin/structured-data" },
+              {
+                label: isEditing
+                  ? "Edit Structured Data"
+                  : "Create Structured Data",
+                link: "#",
+              },
             ]}
           />
         </div>
-        
+
         <PageHeader
           title={isEditing ? "Edit Structured Data" : "Create Structured Data"}
           description={
@@ -214,7 +215,10 @@ export default function EditStructuredDataPage() {
               : "Create new structured data to enhance your SEO with rich search results."
           }
         >
-          <Button variant="outline" onClick={() => setLocation("/admin/structured-data")}>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/structured-data")}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Structured Data
           </Button>
         </PageHeader>
@@ -226,7 +230,10 @@ export default function EditStructuredDataPage() {
         ) : (
           <div className="bg-card rounded-lg p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
@@ -237,6 +244,7 @@ export default function EditStructuredDataPage() {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          value={field.value || structuredData?.entityType}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -249,11 +257,14 @@ export default function EditStructuredDataPage() {
                             <SelectItem value="post">Post</SelectItem>
                             <SelectItem value="homepage">Homepage</SelectItem>
                             <SelectItem value="category">Category</SelectItem>
-                            <SelectItem value="global">Global/Site-wide</SelectItem>
+                            <SelectItem value="global">
+                              Global/Site-wide
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          The type of content this structured data is associated with.
+                          The type of content this structured data is associated
+                          with.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -268,13 +279,16 @@ export default function EditStructuredDataPage() {
                         <FormLabel>Entity ID</FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
+                            type="text"
                             {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              field.onChange(e.target.value || 0)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
-                          The ID of the content this structured data is for. Use 0 for global/site-wide data.
+                          The ID of the content this structured data is for. Use
+                          0 for global/site-wide data.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -290,6 +304,7 @@ export default function EditStructuredDataPage() {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
+                          value={field.value || structuredData?.schemaType}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -299,13 +314,21 @@ export default function EditStructuredDataPage() {
                           <SelectContent>
                             <SelectItem value="WebPage">WebPage</SelectItem>
                             <SelectItem value="Article">Article</SelectItem>
-                            <SelectItem value="BlogPosting">BlogPosting</SelectItem>
+                            <SelectItem value="BlogPosting">
+                              BlogPosting
+                            </SelectItem>
                             <SelectItem value="Product">Product</SelectItem>
-                            <SelectItem value="SoftwareApplication">SoftwareApplication</SelectItem>
-                            <SelectItem value="Organization">Organization</SelectItem>
+                            <SelectItem value="SoftwareApplication">
+                              SoftwareApplication
+                            </SelectItem>
+                            <SelectItem value="Organization">
+                              Organization
+                            </SelectItem>
                             <SelectItem value="Person">Person</SelectItem>
                             <SelectItem value="FAQPage">FAQPage</SelectItem>
-                            <SelectItem value="BreadcrumbList">BreadcrumbList</SelectItem>
+                            <SelectItem value="BreadcrumbList">
+                              BreadcrumbList
+                            </SelectItem>
                             <SelectItem value="WebSite">WebSite</SelectItem>
                             <SelectItem value="custom">Custom</SelectItem>
                           </SelectContent>
@@ -328,10 +351,15 @@ export default function EditStructuredDataPage() {
                         <FormLabel>JSON-LD Schema Data</FormLabel>
                         <div className="flex items-center space-x-2">
                           {jsonValid !== null && (
-                            <span className={`text-sm flex items-center ${jsonValid ? 'text-green-500' : 'text-red-500'}`}>
+                            <span
+                              className={`text-sm flex items-center ${
+                                jsonValid ? "text-green-500" : "text-red-500"
+                              }`}
+                            >
                               {jsonValid ? (
                                 <>
-                                  <Check size={16} className="mr-1" /> Valid JSON
+                                  <Check size={16} className="mr-1" /> Valid
+                                  JSON
                                 </>
                               ) : (
                                 <>
@@ -340,9 +368,9 @@ export default function EditStructuredDataPage() {
                               )}
                             </span>
                           )}
-                          <Button 
-                            type="button" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            variant="outline"
                             size="sm"
                             onClick={formatJson}
                           >
@@ -361,19 +389,24 @@ export default function EditStructuredDataPage() {
                         />
                       </FormControl>
                       <FormDescription>
-                        The JSON-LD structured data in valid JSON format. Must include @context and @type.
+                        The JSON-LD structured data in valid JSON format. Must
+                        include @context and @type.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isSubmitting || jsonValid === false}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || jsonValid === false}
+                  >
                     {isSubmitting && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {isEditing ? "Update Structured Data" : "Create Structured Data"}
+                    {isEditing
+                      ? "Update Structured Data"
+                      : "Create Structured Data"}
                   </Button>
                 </div>
               </form>

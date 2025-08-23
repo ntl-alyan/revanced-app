@@ -119,7 +119,7 @@ const StructuredDataPage = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      return await apiRequest("DELETE", `/api/structured-data/${id}`);
+      await apiRequest("DELETE", `/api/structured-data/${id}`);
     },
     onSuccess: () => {
       toast({
