@@ -72,7 +72,7 @@ export default function BlogPage() {
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             {categories && categories.length > 0 && (
               <>
-                <Link href="/public/posts" passHref>
+                <Link href="/posts" passHref>
                   <Button
                     variant="ghost"
                     className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
@@ -84,7 +84,7 @@ export default function BlogPage() {
                 {categories.map((category) => (
                   <Link 
                     key={category.id} 
-                    href={`/public/posts/category/${category.slug}`}
+                    href={`/posts/category/${category.slug}`}
                     passHref
                   >
                     <Button
@@ -152,7 +152,7 @@ export default function BlogPage() {
                 <div className="p-6 flex-grow flex flex-col">
                   <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
                     <Link
-                      href={`/public/posts/${post.slug}`}
+                      href={`/posts/${post.slug}`}
                       className="hover:underline"
                     >
                       {post.title}
@@ -186,7 +186,7 @@ export default function BlogPage() {
                         className="p-0 h-auto text-primary hover:text-primary hover:bg-transparent"
                         asChild
                       >
-                        <Link href={`/public/posts/${post.slug}`}>
+                        <Link href={`/posts/${post.slug}`}>
                           Read more <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
                       </Button>

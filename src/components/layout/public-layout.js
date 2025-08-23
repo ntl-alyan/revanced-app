@@ -38,9 +38,9 @@ export default function PublicLayout({ children }) {
   });
 
   const navLinks = [
-    { name: "Home", href: "/public" },
-    { name: "Apps", href: "/public/apps" },
-    { name: "Blog", href: "/public/posts" },
+    { name: "Home", href: "/" },
+    { name: "Apps", href: "/apps" },
+    { name: "Blog", href: "/posts" },
   ];
 
   // Social media links from settings with icons
@@ -154,7 +154,7 @@ export default function PublicLayout({ children }) {
       {/* Header with solid background to prevent click-through issues */}
       <header className="sticky top-0 z-50 bg-background border-b border-primary/20 shadow-md">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <Link href="/public" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             {getSetting('revanced_logo') ? (
               <img src={getSetting('revanced_logo')} alt="ReVanced Logo" className="h-8 w-auto" />
             ) : (
@@ -316,7 +316,7 @@ export default function PublicLayout({ children }) {
                 {pages && pages.filter(page => page.status === 'published').map((page) => (
                   <li key={page.id}>
                     <Link 
-                      href={`/public/pages/${page.slug}`} 
+                      href={`/pages/${page.slug}`} 
                       className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-primary/50 mr-2 transition-all group-hover:w-2"></span>

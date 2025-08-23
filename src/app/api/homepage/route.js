@@ -1,50 +1,21 @@
-import dbConnect from "@/src/lib/mongo-connect";
-import { HomepageModel } from "@/src/shared/schema";
+import clientPromise from "@/src/lib/mongo";
 import { NextResponse } from "next/server";
 
 // GET homepage data
 export async function GET() {
   try {
-    await dbConnect();
-    let homepage = await HomepageModel.findOne({}).lean();
-
-    if (!homepage) {
-      homepage = await HomepageModel.create({
-        sections: [],
-        version: "",
-        downloadUrl: "",
-        downloadId: "",
-        metaTitle: "",
-        metaDescription: "",
-        metaKeywords: "",
-        ogTitle: "",
-        ogDescription: "",
-        ogImage: ""
-      });
-    }
-
-    return NextResponse.json(homepage);
-  } catch (err) {
-    console.error("Homepage GET error:", err);
-    return NextResponse.json({ error: "Failed to fetch homepage" }, { status: 500 });
-  }
-}
-
-// PATCH update homepage
-export async function PATCH(req) {
-  try {
-    await dbConnect();
-    const body = await req.json();
-
-    const homepage = await HomepageModel.findOneAndUpdate(
-      {},
-      { ...body, updatedAt: new Date() },
-      { new: true, upsert: true }
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    
+    const data = await db.collection('homepage').find({}).toArray();
+    
+    return NextResponse.json(data);
+  } catch (e) {
+    console.log(e);
+    return NextResponse.json(
+      { error: 'Failed to fetch data' },
+      { status: 500 }
     );
-
-    return NextResponse.json(homepage);
-  } catch (err) {
-    console.error("Homepage PATCH error:", err);
-    return NextResponse.json({ error: "Failed to update homepage" }, { status: 500 });
   }
 }
+

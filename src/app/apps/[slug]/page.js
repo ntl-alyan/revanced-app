@@ -96,7 +96,7 @@ export default function AppDetailPage({ params }) {
           <p className="text-muted-foreground mb-6">
             The app you're looking for doesn't exist or has been removed.
           </p>
-          <Button onClick={() => router.push("/public/apps")}>
+          <Button onClick={() => router.push("/apps")}>
             Back to Apps
           </Button>
         </div>
@@ -195,7 +195,7 @@ export default function AppDetailPage({ params }) {
           <Button 
             variant="ghost" 
             className="group hover:bg-white/10 transition-colors text-white"
-            onClick={() => router.push("/public/apps")}
+            onClick={() => router.push("/apps")}
           >
             <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             Back to Apps
@@ -272,7 +272,7 @@ export default function AppDetailPage({ params }) {
                   <Button 
                     size="lg" 
                     className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/10"
-                    onClick={() => router.push(`/public/download/${app.downloadId}`)}
+                    onClick={() => router.push(`/download/${app.downloadId}`)}
                   >
                     <Download className="h-5 w-5" />
                     Download Now

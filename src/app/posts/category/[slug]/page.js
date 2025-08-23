@@ -103,7 +103,7 @@ export default function CategoryPostsPage({ params }) {
             <Button
               variant="ghost"
               className="border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
-              onClick={() => router.push("/public/posts")}
+              onClick={() => router.push("/posts")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> All Posts
             </Button>
@@ -119,7 +119,7 @@ export default function CategoryPostsPage({ params }) {
                         ? "bg-primary hover:bg-primary/90"
                         : "border border-primary/30 hover:bg-primary/10 hover:border-primary/50"
                     }
-                    onClick={() => router.push(`/public/posts/category/${cat.slug}`)}
+                    onClick={() => router.push(`/posts/category/${cat.slug}`)}
                   >
                     {cat.name}
                   </Button>
@@ -174,7 +174,7 @@ export default function CategoryPostsPage({ params }) {
                 <div className="p-6 flex-grow flex flex-col">
                   <h2 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
                     <Link
-                      href={`/public/posts/${post.slug}`}
+                      href={`/posts/${post.slug}`}
                       className="hover:underline"
                     >
                       {post.title}
@@ -208,7 +208,7 @@ export default function CategoryPostsPage({ params }) {
                         className="p-0 h-auto text-primary hover:text-primary hover:bg-transparent"
                         asChild
                       >
-                        <Link href={`/public/posts/${post.slug}`}>
+                        <Link href={`/posts/${post.slug}`}>
                           Read more <ArrowRight className="ml-1 h-3 w-3" />
                         </Link>
                       </Button>
@@ -226,7 +226,7 @@ export default function CategoryPostsPage({ params }) {
             <p className="text-white/70 mb-8">
               There are currently no posts in the {category?.name} category.
             </p>
-            <Button variant="default" onClick={() => router.push("/public/posts")}>
+            <Button variant="default" onClick={() => router.push("/posts")}>
               View All Posts
             </Button>
           </div>

@@ -83,7 +83,7 @@ export default function BlogPostDetailPage({ params }) {
             </AlertDescription>
           </Alert>
           <div className="text-center mt-8">
-            <Button onClick={() => router.push("/public/posts")}>
+            <Button onClick={() => router.push("/posts")}>
               Back to Blog
             </Button>
           </div>
@@ -122,7 +122,7 @@ export default function BlogPostDetailPage({ params }) {
           <p className="text-white/70 mb-8">
             The blog post you're looking for doesn't exist or has been removed.
           </p>
-          <Button onClick={() => router.push("/public/posts")}>
+          <Button onClick={() => router.push("/posts")}>
             Back to Blog
           </Button>
         </div>
@@ -156,7 +156,7 @@ export default function BlogPostDetailPage({ params }) {
           variant="ghost"
           size="sm"
           className="text-primary hover:text-primary hover:bg-primary/10"
-          onClick={() => router.push("/public/posts")}
+          onClick={() => router.push("/posts")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blog
         </Button>
@@ -281,7 +281,7 @@ export default function BlogPostDetailPage({ params }) {
                     <Button
                       variant="ghost"
                       className="border border-primary/30 hover:bg-primary/10 mt-2"
-                      onClick={() => router.push("/public/posts")}
+                      onClick={() => router.push("/posts")}
                     >
                       Back to All Posts
                     </Button>
@@ -313,7 +313,7 @@ export default function BlogPostDetailPage({ params }) {
                         <div className="p-5">
                           <h4 className="font-bold mb-2 leading-tight">
                             <Link
-                              href={`/public/posts/${relatedPost.slug}`}
+                              href={`/posts/${relatedPost.slug}`}
                               className="hover:text-primary transition-colors hover:underline"
                             >
                               {relatedPost.title}
@@ -338,7 +338,7 @@ export default function BlogPostDetailPage({ params }) {
                   <Button
                     variant="outline"
                     className="w-full border-primary/30 hover:bg-primary/10"
-                    onClick={() => router.push("/public/posts")}
+                    onClick={() => router.push("/posts")}
                   >
                     View All Posts
                   </Button>

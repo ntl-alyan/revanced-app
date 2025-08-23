@@ -164,7 +164,7 @@ export default function DownloadPage({ params }) {
               The download link you're looking for is no longer available or may
               have been moved.
             </p>
-            <Button size="lg" className="gap-2" onClick={() => router.push("/public/apps")}>
+            <Button size="lg" className="gap-2" onClick={() => router.push("/apps")}>
               <ArrowLeft className="h-4 w-4" />
               Browse Available Apps
             </Button>
@@ -216,7 +216,7 @@ export default function DownloadPage({ params }) {
             <Button
               size="default"
               className="bg-primary hover:bg-primary/90 text-black font-medium shadow-lg border-2 border-white/20"
-              onClick={() => router.push(app.slug ? `/public/apps/${app.slug}` : "/public/apps")}
+              onClick={() => router.push(app.slug ? `/apps/${app.slug}` : "/apps")}
             >
               <ArrowLeft className= "text-white/80 h-5 w-5 mr-2" />
                <p className="text-lg text-white/80 max-w-2xl">Back to {app.slug ? app.name : "Apps"}</p>
@@ -329,7 +329,7 @@ export default function DownloadPage({ params }) {
                     <p className="text-white/70 mb-4">
                       No download is currently available for this application.
                     </p>
-                    <Button variant="outline" className="bg-black/30" onClick={() => router.push("/public/apps")}>
+                    <Button variant="outline" className="bg-black/30" onClick={() => router.push("/apps")}>
                       Browse Other Apps
                     </Button>
                   </div>
@@ -567,7 +567,7 @@ export default function DownloadPage({ params }) {
 
               {/* App details link */}
               <div className="mt-6 text-center">
-                <Button variant="ghost" className="gap-2" onClick={() => router.push(`/public/apps/${app.slug}`)}>
+                <Button variant="ghost" className="gap-2" onClick={() => router.push(`/apps/${app.slug}`)}>
                   View Detailed App Information
                   <ChevronDown className="h-4 w-4" />
                 </Button>
