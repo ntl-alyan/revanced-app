@@ -1,102 +1,14 @@
-// app/api/pages/route.js
+// app/api/pages/[id]/route.js
 import clientPromise from '@/src/lib/mongo';
 import { NextResponse } from 'next/server';
+import { ObjectId } from 'mongodb';
 // import { isAuthenticated } from "@/src/lib/auth-middleware";
 
-export async function POST(req) {
-  try {
-    // 🔐 Auth temporarily bypassed
-    // const authResult = await isAuthenticated(req);
-    // if (!authResult.authenticated) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
-
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB);
-    const pagesCollection = db.collection("pages");
-
-    const body = await req.json();
-
-    // 📝 Basic validation
-    if (!body.title || !body.slug) {
-      return NextResponse.json(
-        { message: "Title and slug are required" },
-        { status: 400 }
-      );
-    }
-
-    const pageData = {
-      ...body,
-      // authorId: authResult.user.id, // will add later
-      status: body.status || "draft",
-      createdAt: new Date(),
-    };
-
-    // 🚨 Check slug uniqueness
-    const existingPage = await pagesCollection.findOne({ slug: pageData.slug });
-    if (existingPage) {
-      return NextResponse.json(
-        { message: "A page with this slug already exists" },
-        { status: 400 }
-      );
-    }
-
-    // 💾 Insert new page
-    const result = await pagesCollection.insertOne(pageData);
-
-    return NextResponse.json(
-      { ...pageData, _id: result.insertedId },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Create Page API Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error", error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
 // =============================
-// GET /api/pages  → List all pages
+// GET /api/pages/[id] → Get a single page by ID
 // =============================
-export async function GET() {
+export async function GET(req, { params }) {
   try {
-    // 🔐 Auth temporarily bypassed
-    // const authResult = await isAuthenticated(req);
-    // if (!authResult.authenticated) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
-
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB);
-    const pagesCollection = db.collection("pages");
-
-    const pages = await pagesCollection
-      .find({})
-      .sort({ createdAt: -1 }) // newest first
-      .toArray();
-
-    return NextResponse.json(pages, { status: 200 });
-  } catch (error) {
-    console.error("Get Pages API Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error", error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-// =============================
-// Delete Post endpoints:
-export async function DELETE(req, { params }) {
-  try {
-    // 🔐 Auth temporarily bypassed
-    // const authResult = await isAuthenticated(req);
-    // if (!authResult.authenticated) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
-
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     const pagesCollection = db.collection("pages");
@@ -110,7 +22,99 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const { ObjectId } = require("mongodb");
+    const page = await pagesCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!page) {
+      return NextResponse.json(
+        { message: "Page not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(page, { status: 200 });
+  } catch (error) {
+    console.error("Get Page by ID API Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================
+// PUT /api/pages/[id] → Update a page by ID
+// =============================
+export async function PUT(req, { params }) {
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    const pagesCollection = db.collection("pages");
+
+    const { id } = params;
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Page ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+
+    if (!body.title || !body.slug) {
+      return NextResponse.json(
+        { message: "Title and slug are required" },
+        { status: 400 }
+      );
+    }
+
+    const updateData = {
+      ...body,
+      updatedAt: new Date(),
+    };
+
+    const result = await pagesCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { message: "Page not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Page updated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Update Page API Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================
+// DELETE /api/pages/[id] → Delete a page by ID
+// =============================
+export async function DELETE(req, { params }) {
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+    const pagesCollection = db.collection("pages");
+
+    const { id } = params;
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Page ID is required" },
+        { status: 400 }
+      );
+    }
 
     const result = await pagesCollection.deleteOne({
       _id: new ObjectId(id),
