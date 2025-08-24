@@ -69,10 +69,13 @@ export default function AppsPage() {
   // Delete app mutation
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await apiRequest("DELETE", `/api/apps/${id}`);
+      const res= await apiRequest("DELETE", `/api/apps/${id}`);
+      return await res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/apps"] });
+    onSuccess: async () => {
+        await queryClient.refetchQueries({
+      queryKey: ["/api/apps"]
+    });
       toast({
         title: "App deleted",
         description: "The app has been successfully deleted",
@@ -149,7 +152,7 @@ export default function AppsPage() {
         ) : filteredApps && filteredApps.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredApps.map((app) => (
-              <Card key={app.id} className="overflow-hidden">
+              <Card key={app._id} className="overflow-hidden">
                 {app.featuredImage ? (
                   <div className="aspect-video w-full overflow-hidden">
                     <img 

@@ -1,61 +1,52 @@
+"use client";
 import { useState } from "react";
-import { useLocation } from "wouter";
-import { z } from "zod";
-import Head from 'next/head'
+import { useRouter } from "next/navigation";
+import Head from "next/head";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
 import {
-  insertAppSchema,
-  appSectionSchema,
-  InsertApp
-} from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppSectionsEditor } from "@/components/apps/app-sections-editor";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Switch } from "@/src/components/ui/switch";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
+import { AppSectionsEditor } from "@/src/components/apps/app-sections-editor";
+import { useToast } from "@/src/hooks/use-toast";
+import { Card, CardContent } from "@/src/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 // Function to generate a random download ID
 const generateRandomId = () => {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
 };
-
-// Form schema with validation
-const formSchema = insertAppSchema.extend({
-  slug: z.string().min(3, { message: "Slug must be at least 3 characters" }).regex(/^[a-z0-9-]+$/, {
-    message: "Slug can only contain lowercase letters, numbers, and hyphens",
-  }),
-  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
-  downloadId: z.string().optional(),
-});
 
 export default function CreateAppPage() {
   const { toast } = useToast();
-  const [, navigate] = useLocation();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("basic");
-  const [sections, setSections] = useState<z.infer<typeof appSectionSchema>[]>([]);
+  const [sections, setSections] = useState([]);
 
   // Initialize form
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm({
     defaultValues: {
       name: "",
       slug: "",
@@ -67,43 +58,26 @@ export default function CreateAppPage() {
       featuredImage: "",
       metaTitle: "",
       metaDescription: "",
-      isActive: true
+      isActive: true,
     },
   });
 
   // Create app mutation
   const mutation = useMutation({
     mutationFn: async (data) => {
+      const appData = {
+        ...data,
+        sections: sections.length > 0 ? sections : [],
+      };
+
       try {
-        // Prepare app data with proper handling of sections
-        const appData = {
-          ...data,
-          sections: sections.length > 0 ? sections : []
-        };
-        
-        // Log the data being sent for debugging
-        // console.log("Creating app with data:", JSON.stringify(appData));
-        
-        // Make sure sections is properly serializable
-        try {
-          // Test if sections can be properly serialized
-          JSON.stringify(appData.sections);
-          // console.log("Sections successfully serialized");
-        } catch (serializationError) {
-          console.error("Sections serialization error:", serializationError);
-          // Provide a fallback empty array
-          appData.sections = [];
-        }
-        
-        // Perform the API request
-        const res = await apiRequest("POST", "/api/apps", appData);
-        const createdApp = await res.json();
-        // console.log("App created successfully:", createdApp);
-        return createdApp;
-      } catch (error) {
-        console.error("Error creating app:", error);
-        throw error; // Re-throw to trigger onError callback
+        JSON.stringify(appData.sections); // ensure serializable
+      } catch {
+        appData.sections = [];
       }
+
+      const res = await apiRequest("POST", "/api/apps", appData);
+      return await res;
     },
     onSuccess: () => {
       toast({
@@ -111,7 +85,7 @@ export default function CreateAppPage() {
         description: "The app has been created successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/apps"] });
-      navigate("/admin/apps");
+      router.push("/admin/apps");
     },
     onError: (error) => {
       toast({
@@ -123,9 +97,7 @@ export default function CreateAppPage() {
   });
 
   const onSubmit = (data) => {
-    // Only submit the form if the submit button was actually clicked
-    // This prevents auto-submission when sections are added
-    if (document.activeElement?.getAttribute('type') === 'submit') {
+    if (document.activeElement?.getAttribute("type") === "submit") {
       mutation.mutate(data);
     }
   };
@@ -136,9 +108,9 @@ export default function CreateAppPage() {
     if (name) {
       const slug = name
         .toLowerCase()
-        .replace(/[^\w\s-]/g, "") // Remove special chars except whitespace and hyphen
-        .replace(/\s+/g, "-") // Replace whitespace with hyphen
-        .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
       form.setValue("slug", slug);
     }
   };
@@ -147,7 +119,7 @@ export default function CreateAppPage() {
   const autoGenerateMetaTitle = () => {
     const name = form.getValues("name");
     const currentMetaTitle = form.getValues("metaTitle");
-    
+
     if (name && !currentMetaTitle) {
       form.setValue("metaTitle", name);
     }
@@ -172,7 +144,7 @@ export default function CreateAppPage() {
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
             </TabsList>
-            
+
             {/* Basic Info Tab */}
             <TabsContent value="basic" className="space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
@@ -184,12 +156,11 @@ export default function CreateAppPage() {
                     <FormItem>
                       <FormLabel>App Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter app name" 
+                        <Input
+                          placeholder="Enter app name"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
-                            // Don't auto-generate if slug is manually set
                             if (!form.getValues("slug")) {
                               setTimeout(generateSlug, 500);
                             }
@@ -204,7 +175,7 @@ export default function CreateAppPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 {/* Slug */}
                 <FormField
                   control={form.control}
@@ -214,14 +185,11 @@ export default function CreateAppPage() {
                       <FormLabel>Slug</FormLabel>
                       <div className="flex space-x-2">
                         <FormControl>
-                          <Input 
-                            placeholder="Enter slug" 
-                            {...field} 
-                          />
+                          <Input placeholder="Enter slug" {...field} />
                         </FormControl>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           onClick={generateSlug}
                         >
                           Generate
@@ -235,7 +203,7 @@ export default function CreateAppPage() {
                   )}
                 />
               </div>
-              
+
               {/* Description */}
               <FormField
                 control={form.control}
@@ -244,17 +212,17 @@ export default function CreateAppPage() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Enter app description" 
-                        className="min-h-32" 
-                        {...field} 
+                      <Textarea
+                        placeholder="Enter app description"
+                        className="min-h-32"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid gap-6 sm:grid-cols-2">
                 {/* Version */}
                 <FormField
@@ -270,7 +238,7 @@ export default function CreateAppPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 {/* Download URL */}
                 <FormField
                   control={form.control}
@@ -286,7 +254,7 @@ export default function CreateAppPage() {
                   )}
                 />
               </div>
-              
+
               <div className="grid gap-6 sm:grid-cols-2">
                 {/* Icon */}
                 <FormField
@@ -309,21 +277,25 @@ export default function CreateAppPage() {
                           </FormDescription>
                           <FormMessage />
                         </div>
-                        
+
                         {/* Preview icon if available */}
                         {field.value && (
                           <div className="h-16 w-16 rounded-lg overflow-hidden border border-border flex items-center justify-center bg-white/10">
-                            <img src={field.value} alt="App Icon" className="max-h-12 max-w-12" />
+                            <img
+                              src={field.value}
+                              alt="App Icon"
+                              className="max-h-12 max-w-12"
+                            />
                           </div>
                         )}
                       </div>
-                      
+
                       {field.value && (
                         <div className="flex items-center mt-2">
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => field.onChange("")}
                             className="h-7 px-2 text-xs text-destructive hover:text-destructive/90"
                           >
@@ -334,7 +306,7 @@ export default function CreateAppPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 {/* Featured Image */}
                 <FormField
                   control={form.control}
@@ -356,21 +328,25 @@ export default function CreateAppPage() {
                           </FormDescription>
                           <FormMessage />
                         </div>
-                        
+
                         {/* Preview image if available */}
                         {field.value && (
                           <div className="h-16 w-16 rounded-lg overflow-hidden border border-border flex items-center justify-center bg-white/10">
-                            <img src={field.value} alt="Featured Image" className="max-h-12 max-w-12" />
+                            <img
+                              src={field.value}
+                              alt="Featured Image"
+                              className="max-h-12 max-w-12"
+                            />
                           </div>
                         )}
                       </div>
-                      
+
                       {field.value && (
                         <div className="flex items-center mt-2">
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => field.onChange("")}
                             className="h-7 px-2 text-xs text-destructive hover:text-destructive/90"
                           >
@@ -382,7 +358,7 @@ export default function CreateAppPage() {
                   )}
                 />
               </div>
-              
+
               {/* Is Active */}
               <FormField
                 control={form.control}
@@ -405,27 +381,30 @@ export default function CreateAppPage() {
                 )}
               />
             </TabsContent>
-            
+
             {/* Content Tab */}
             <TabsContent value="content" className="space-y-6">
               <Card>
                 <CardContent className="pt-6">
                   <div className="border-b pb-4 mb-4">
                     <p className="text-sm text-muted-foreground">
-                      Add content sections below and click the Save button when done. Changes are only saved when you submit the form.
+                      Add content sections below and click the Save button when
+                      done. Changes are only saved when you submit the form.
                     </p>
                   </div>
-                  <AppSectionsEditor 
-                    sections={sections} 
+                  <AppSectionsEditor
+                    sections={sections}
                     setSections={(newSections) => {
                       // Only update the sections state, don't trigger form submission
                       setSections(newSections);
-                    }} 
+                    }}
                   />
                 </CardContent>
               </Card>
             </TabsContent>
+
             
+
             {/* SEO Tab */}
             <TabsContent value="seo" className="space-y-6">
               <Card>
@@ -447,7 +426,7 @@ export default function CreateAppPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   {/* Meta Description */}
                   <FormField
                     control={form.control}
@@ -464,7 +443,8 @@ export default function CreateAppPage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Brief description shown in search results. Aim for 150-160 characters.
+                          Brief description shown in search results. Aim for
+                          150-160 characters.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -474,23 +454,23 @@ export default function CreateAppPage() {
               </Card>
             </TabsContent>
           </Tabs>
-          
+
           <div className="flex justify-end gap-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate("/admin/apps")}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/admin/apps")}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={mutation.isPending}
               className="min-w-24"
             >
               {mutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...
                 </>
               ) : (

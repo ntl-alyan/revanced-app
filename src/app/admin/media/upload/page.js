@@ -1,3 +1,4 @@
+"use client";
 import { useState, useRef } from "react";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
@@ -5,27 +6,26 @@ import { useAuth } from "@/src/hooks/use-auth";
 import { useToast } from "@/src/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/src/lib/queryClient";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
-import { UploadCloud, X, File, Image } from "lucide-react";
+import { UploadCloud, X, File, Image, AlertCircle } from "lucide-react";
 import { Progress } from "@/src/components/ui/progress";
 import { fileSize } from "@/src/lib/utils";
-import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 
 export default function UploadMediaPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
-  
+  const router = useRouter();
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const fileInputRef = useRef(null);
 
   const uploadMediaMutation = useMutation({
@@ -36,45 +36,45 @@ export default function UploadMediaPage() {
 
       const formData = new FormData();
       formData.append("file", file);
-
       // Create custom fetch with upload progress
-      return new Promise<any>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/media/upload");
-        
-        // Handle progress
+
         xhr.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
             setUploadProgress(progress);
           }
         });
-        
-        // Handle completion
+
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const response = JSON.parse(xhr.responseText);
               resolve(response);
-            } catch (error) {
+            } catch {
               reject(new Error("Invalid response from server"));
             }
           } else {
             try {
               const errorResponse = JSON.parse(xhr.responseText);
-              reject(new Error(errorResponse.message || `Upload failed with status ${xhr.status}`));
-            } catch (error) {
+              reject(
+                new Error(
+                  errorResponse.message ||
+                    `Upload failed with status ${xhr.status}`
+                )
+              );
+            } catch {
               reject(new Error(`Upload failed with status ${xhr.status}`));
             }
           }
         };
-        
-        // Handle errors
+
         xhr.onerror = () => {
           reject(new Error("Network error occurred"));
         };
-        
-        // Send the form data
+
         xhr.send(formData);
       });
     },
@@ -85,21 +85,19 @@ export default function UploadMediaPage() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      
-      // Reset state
+
       setSelectedFile(null);
       setPreview(null);
       setUploadProgress(0);
       setIsUploading(false);
-      
-      // Navigate back to media page
-      navigate("/admin/media");
+
+      router.push("/admin/media");
     },
     onError: (error) => {
       setError(error.message);
       setIsUploading(false);
       setUploadProgress(0);
-      
+      console.log(error);
       toast({
         title: "Upload failed",
         description: error.message,
@@ -112,8 +110,7 @@ export default function UploadMediaPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      
-      // Create preview if it's an image
+
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -123,7 +120,7 @@ export default function UploadMediaPage() {
       } else {
         setPreview(null);
       }
-      
+
       setError(null);
     }
   };
@@ -134,20 +131,18 @@ export default function UploadMediaPage() {
 
   const handleDrop = (e) => {
     e.preventDefault();
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
       if (!validTypes.includes(file.type)) {
         setError("Invalid file type. Only images are allowed.");
         return;
       }
-      
+
       setSelectedFile(file);
-      
-      // Create preview if it's an image
+
       if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -157,7 +152,7 @@ export default function UploadMediaPage() {
       } else {
         setPreview(null);
       }
-      
+
       setError(null);
     }
   };
@@ -194,10 +189,12 @@ export default function UploadMediaPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
-            <div 
+
+            <div
               className={`border-2 border-dashed rounded-lg p-12 text-center ${
-                selectedFile ? "border-primary" : "border-gray-300 dark:border-gray-700"
+                selectedFile
+                  ? "border-primary"
+                  : "border-gray-300 dark:border-gray-700"
               }`}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
@@ -207,14 +204,14 @@ export default function UploadMediaPage() {
                   <div className="flex items-center justify-center">
                     {preview ? (
                       <div className="relative">
-                        <img 
-                          src={preview} 
-                          alt="Upload preview" 
+                        <img
+                          src={preview}
+                          alt="Upload preview"
                           className="max-h-56 max-w-full rounded"
                         />
-                        <Button 
-                          variant="destructive" 
-                          size="icon" 
+                        <Button
+                          variant="destructive"
+                          size="icon"
                           className="absolute -top-2 -right-2 h-7 w-7"
                           onClick={handleRemoveFile}
                         >
@@ -230,9 +227,9 @@ export default function UploadMediaPage() {
                             {fileSize(selectedFile.size)}
                           </p>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="ml-2"
                           onClick={handleRemoveFile}
                         >
@@ -241,7 +238,7 @@ export default function UploadMediaPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   {isUploading && (
                     <div className="space-y-2">
                       <Progress value={uploadProgress} className="h-2" />
@@ -259,7 +256,9 @@ export default function UploadMediaPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-lg font-medium">Drag & drop file to upload</h3>
+                    <h3 className="text-lg font-medium">
+                      Drag & drop file to upload
+                    </h3>
                     <p className="text-gray-500 dark:text-gray-400">
                       or click to browse from your computer
                     </p>
@@ -279,8 +278,8 @@ export default function UploadMediaPage() {
                       onChange={handleFileChange}
                       id="file-upload"
                     />
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Image className="mr-2 h-4 w-4" />
@@ -291,13 +290,16 @@ export default function UploadMediaPage() {
               )}
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex justify-between border-t p-6">
-            <Button variant="outline" onClick={() => navigate("/admin/media")}>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/media")}
+            >
               Cancel
             </Button>
-            <Button 
-              onClick={handleUpload} 
+            <Button
+              onClick={handleUpload}
               disabled={!selectedFile || isUploading}
             >
               {isUploading ? (

@@ -139,3 +139,60 @@ export async function PATCH(req, { params }) {
     );
   }
 }
+
+export async function DELETE(req, { params }) {
+  try {
+    const { id } = params;
+
+    // Check if user is admin
+    const adminCheck = await isAdmin(req);
+    if (!adminCheck.isAdmin) {
+      return NextResponse.json(
+        { message: "Unauthorized: Admin access required" },
+        { status: 403 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB);
+
+    // Validate ObjectId format
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { message: "Invalid app ID format" },
+        { status: 400 }
+      );
+    }
+
+    // Delete the app
+    const result = await db.collection('apps').deleteOne({ 
+      _id: new ObjectId(id) 
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { message: "App not found" },
+        { status: 404 }
+      );
+    }
+
+    // Return 204 No Content
+    return  NextResponse.json({ message: "Deleted Successfully" }, { status: 200 });
+
+  } catch (error) {
+    console.error('Delete app error:', error);
+    
+    // Handle invalid ObjectId format
+    if (error instanceof Error && error.message.includes('ObjectId')) {
+      return NextResponse.json(
+        { message: "Invalid app ID format" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
