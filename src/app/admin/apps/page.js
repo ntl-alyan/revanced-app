@@ -1,20 +1,20 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from 'next/link'
+import Link from "next/link";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
-import Head from 'next/head'
-import { 
-  AppWindow, 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import Head from "next/head";
+import {
+  AppWindow,
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   Link as LinkIcon,
   FileDown,
-  Eye
+  Eye,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -69,13 +69,13 @@ export default function AppsPage() {
   // Delete app mutation
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const res= await apiRequest("DELETE", `/api/apps/${id}`);
+      const res = await apiRequest("DELETE", `/api/apps/${id}`);
       return await res;
     },
     onSuccess: async () => {
-        await queryClient.refetchQueries({
-      queryKey: ["/api/apps"]
-    });
+      await queryClient.invalidateQueries({
+        queryKey: ["/api/apps"],
+      });
       toast({
         title: "App deleted",
         description: "The app has been successfully deleted",
@@ -94,15 +94,16 @@ export default function AppsPage() {
   // Handle delete
   const handleDelete = () => {
     if (selectedAppId) {
-      console.log(selectedAppId)
+      console.log(selectedAppId);
       deleteMutation.mutate(selectedAppId);
     }
   };
 
   // Filter apps by search term
-  const filteredApps = apps?.filter(app => 
-    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredApps = apps?.filter(
+    (app) =>
+      app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -117,7 +118,7 @@ export default function AppsPage() {
         actionLink="/admin/apps/create"
         actionIcon={<Plus className="h-4 w-4" />}
       />
-      
+
       <div className="w-full max-w-xs">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -129,7 +130,7 @@ export default function AppsPage() {
           />
         </div>
       </div>
-      
+
       <div className="mt-6">
         {isLoading ? (
           // Loading skeletons
@@ -155,9 +156,9 @@ export default function AppsPage() {
               <Card key={app._id} className="overflow-hidden">
                 {app.featuredImage ? (
                   <div className="aspect-video w-full overflow-hidden">
-                    <img 
-                      src={app.featuredImage} 
-                      alt={app.name} 
+                    <img
+                      src={app.featuredImage}
+                      alt={app.name}
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -185,7 +186,10 @@ export default function AppsPage() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/admin/apps/edit/${app._id}`} className="cursor-pointer">
+                          <Link
+                            href={`/admin/apps/edit/${app._id}`}
+                            className="cursor-pointer"
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </Link>
@@ -202,7 +206,11 @@ export default function AppsPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <a href={`/apps/${app.slug}`} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={`/apps/${app.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <Eye className="mr-2 h-4 w-4" />
                             View
                           </a>
@@ -228,14 +236,32 @@ export default function AppsPage() {
                   </Button>
                   <div className="flex gap-2">
                     {app.downloadUrl && (
-                      <Button variant="outline" size="icon" asChild title="Download URL">
-                        <a href={app.downloadUrl} target="_blank" rel="noopener noreferrer">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        asChild
+                        title="Download URL"
+                      >
+                        <a
+                          href={app.downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <FileDown className="h-4 w-4" />
                         </a>
                       </Button>
                     )}
-                    <Button variant="outline" size="icon" asChild title="View public page">
-                      <a href={`/apps/${app.slug}`} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      asChild
+                      title="View public page"
+                    >
+                      <a
+                        href={`/apps/${app.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <LinkIcon className="h-4 w-4" />
                       </a>
                     </Button>
@@ -249,10 +275,9 @@ export default function AppsPage() {
             <AppWindow className="mx-auto h-12 w-12 text-muted-foreground/50" />
             <h3 className="mt-4 font-semibold">No apps found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              {searchTerm ? 
-                "No apps match your search. Try a different term." : 
-                "Get started by creating a new app."
-              }
+              {searchTerm
+                ? "No apps match your search. Try a different term."
+                : "Get started by creating a new app."}
             </p>
             {!searchTerm && (
               <Button asChild className="mt-4">
