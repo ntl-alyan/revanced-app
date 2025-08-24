@@ -5,7 +5,6 @@ import { PageHeader } from "@/src/components/layout/page-header";
 import { RichTextEditor } from "@/src/components/editor/rich-text-editor";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,

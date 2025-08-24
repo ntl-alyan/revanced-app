@@ -107,6 +107,7 @@ export default function RedirectsPage() {
       header: "Status",
       cell: ({ row }) => (
         <Badge
+        className={"text-black"}
           variant={row.original.statusCode === 301 ? "default" : "secondary"}
         >
           {row.original.statusCode}

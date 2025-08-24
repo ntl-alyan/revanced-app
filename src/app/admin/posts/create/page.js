@@ -116,7 +116,7 @@ export default function CreatePostPage() {
 
   // Redirect if not authenticated
   if (!user) {
-    router.push("/auth")
+    return router.push("/auth")
   }
 
   return (

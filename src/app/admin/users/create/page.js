@@ -50,8 +50,8 @@ export default function CreateUserPage() {
 
   const onSubmit = (data) => {
     registerMutation.mutate(data, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["/api/users"] });
         router.push("/admin/users");
       },
       onError: (error) => {
