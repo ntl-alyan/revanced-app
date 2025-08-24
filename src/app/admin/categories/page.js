@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from 'next/link'
 import { Edit, Trash2, Search } from "lucide-react";
@@ -25,7 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader
 } from "@/src/components/ui/alert-dialog";
-import { apiRequest } from "@/src/lib/queryClient";
+import { apiRequest,queryClient } from "@/src/lib/queryClient";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { useToast } from "@/src/hooks/use-toast";
 import { Button } from "@/src/components/ui/button";
@@ -34,14 +34,20 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteCategoryId, setDeleteCategoryId] = useState(null);
   const { toast } = useToast();
+  const [filteredCategories,setFilteredCategories] = useState([])
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["/api/categories"],
+     queryFn: async () => {
+      const res = await fetch("/api/categories");
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      return res.json();
+    },
   });
 
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id) => {
-      await apiRequest("DELETE", `/api/categories/${id}`);
+      return await apiRequest("DELETE", `/api/categories/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -75,9 +81,24 @@ export default function CategoriesPage() {
     setDeleteCategoryId(null);
   };
 
-  const filteredCategories = categories?.filter((category) => {
-    return category.name.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  useEffect(()=>{
+    if(categories && categories.length>0)
+    {
+      if(searchTerm)
+      {
+        const filter = categories?.filter((category) => {
+          return category.name.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+
+        setFilteredCategories(filter);
+      } else
+      {
+        setFilteredCategories(categories)
+      }
+    }
+     
+  },[categories,searchTerm])
+ 
 
   return (
     <MainLayout>
@@ -126,7 +147,7 @@ export default function CategoriesPage() {
               <TableBody>
                 {filteredCategories && filteredCategories.length > 0 ? (
                   filteredCategories.map((category) => (
-                    <TableRow key={category.id}>
+                    <TableRow key={category._id}>
                       <TableCell className="font-medium">
                         {category.name}
                       </TableCell>
@@ -136,7 +157,7 @@ export default function CategoriesPage() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/categories/edit/${category.id}`}>
+                            <Link href={`/admin/categories/edit/${category._id}`}>
                               <Edit className="h-4 w-4 mr-1" />
                               Edit
                             </Link>
@@ -145,7 +166,7 @@ export default function CategoriesPage() {
                             variant="outline"
                             size="sm"
                             className="text-red-500 hover:text-red-700"
-                            onClick={() => confirmDelete(category.id)}
+                            onClick={() => confirmDelete(category._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Delete

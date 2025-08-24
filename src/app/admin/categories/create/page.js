@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { extendedCategorySchema } from "@/src/shared/schema";
 import { generateSlug } from "@/src/lib/utils";
+import { useRouter } from "next/navigation";
 
 export default function CreateCategoryPage() {
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
+  const router = useRouter();
   // React Hook Form with Zod
   const {
     register,
@@ -18,7 +16,6 @@ export default function CreateCategoryPage() {
     formState: { errors, isSubmitting },
     watch,
   } = useForm({
-    resolver: zodResolver(extendedCategorySchema),
     defaultValues: {
       name: "",
       slug: "",
@@ -46,6 +43,7 @@ export default function CreateCategoryPage() {
 
       setSuccessMessage("Category created successfully!");
       setServerError("");
+      router.push("/admin/categories");
     } catch (err) {
       setServerError(err.message);
       setSuccessMessage("");
@@ -65,7 +63,7 @@ export default function CreateCategoryPage() {
           <input
             type="text"
             {...register("name")}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded text-black"
             placeholder="Category Name"
           />
           {errors.name && <p className="text-red-500">{errors.name.message}</p>}
@@ -76,7 +74,7 @@ export default function CreateCategoryPage() {
           <input
             type="text"
             {...register("slug")}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded text-black"
             placeholder={autoSlug || "Auto-generated from name"}
           />
           {errors.slug && <p className="text-red-500">{errors.slug.message}</p>}
@@ -86,7 +84,7 @@ export default function CreateCategoryPage() {
           <label className="block mb-1 font-medium">Description</label>
           <textarea
             {...register("description")}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded text-black"
             placeholder="Optional description"
           />
           {errors.description && (
