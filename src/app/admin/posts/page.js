@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { MainLayout } from "@/src/components/layout/main-layout";
 import { PageHeader } from "@/src/components/layout/page-header";
@@ -46,9 +46,9 @@ export default function PostsPage() {
 	const [deletePostId, setDeletePostId] = useState(null);
 	const { toast } = useToast();
 
-	const { data: posts, isLoading: postsLoading } = useQuery<({
+	const { data: posts, isLoading: postsLoading } = useQuery({
 		queryKey: ["/api/posts"],
-		queryFn: () => apiRequest("GET", "/api/posts"), // now returns JSON
+		queryFn: () => apiRequest("PATCH", "/api/posts"), // now returns JSON
 	});
 
 	const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -99,7 +99,7 @@ export default function PostsPage() {
 			.includes(searchTerm.toLowerCase());
 		const matchesCategory =
 			categoryFilter === "all" ||
-			post.category?.toString() === categoryFilter;
+			post.categoryId?.toString() === categoryFilter.toString();
 		const matchesStatus =
 			statusFilter === "all" || post.status === statusFilter;
 		return matchesSearch && matchesCategory && matchesStatus;
@@ -190,17 +190,18 @@ export default function PostsPage() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
+							
 							{filteredPosts && filteredPosts.length > 0 ? (
 								filteredPosts.map((post) => (
 									<TableRow key={post.id}>
 										<TableCell className="font-medium">{post.title}</TableCell>
 										<TableCell>
-											{post.category && categories ? (
+											{post.categoryId && categories ? (
 												<Badge
 													variant="outline"
 													className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900 border-none"
 												>
-													{categories.find((c) => c._id === post.category)
+													{categories.find((c) => c._id.toString() === post.categoryId.toString())
 														?.name || "Uncategorized"}
 												</Badge>
 											) : (
@@ -220,7 +221,7 @@ export default function PostsPage() {
 												className={
 													post.status === "published"
 														? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900"
-														: ""
+														: "text-black"
 												}
 											>
 												{post.status.charAt(0).toUpperCase() +

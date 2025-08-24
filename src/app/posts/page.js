@@ -36,7 +36,7 @@ export default function BlogPage() {
 
   const getCategoryName = (categoryId) => {
     if (!categoryId || !categories) return "Uncategorized";
-    const category = categories.find((cat) => cat.id === categoryId);
+    const category = categories.find((cat) => cat._id === categoryId);
     return category ? category.name : "Uncategorized";
   };
 
@@ -83,7 +83,7 @@ export default function BlogPage() {
 
                 {categories.map((category) => (
                   <Link 
-                    key={category.id} 
+                    key={category._id} 
                     href={`/posts/category/${category.slug}`}
                     passHref
                   >

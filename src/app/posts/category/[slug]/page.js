@@ -24,22 +24,27 @@ export default function CategoryPostsPage({ params }) {
       if (!response.ok) {
         throw new Error("Failed to fetch category");
       }
-      return response.json();
+    const res=await response.json();
+      return res;
     },
     enabled: !!slug,
   });
 
-  const { data: posts, isLoading: isLoadingPosts } = useQuery({
-    queryKey: ["/api/posts", "category", category?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/posts/category/${category?.id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch posts");
-      }
-      return response.json();
-    },
-    enabled: !!category?.id,
-  });
+  // const { data: posts, isLoading: isLoadingPosts } = useQuery({
+  //   queryKey: [`/api/posts/category/${category?.id}`],
+  //   queryFn: async () => {
+  //     const response = await fetch(`/api/posts/category/${category?.id}`);
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to fetch posts");
+  //     }
+
+  //      const res=await response.json();
+  
+  //     return res;
+  //   },
+  //   // enabled: !!category?._id,
+  // });
 
   const { data: categories } = useQuery({
     queryKey: ["/api/categories"],
@@ -52,7 +57,7 @@ export default function CategoryPostsPage({ params }) {
     },
   });
 
-  const isLoading = isLoadingCategory || isLoadingPosts;
+  const isLoading = isLoadingCategory;
 
   return (
     <PublicLayout>
@@ -76,13 +81,12 @@ export default function CategoryPostsPage({ params }) {
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent"></div>
         <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-3xl opacity-20"></div>
         <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-3xl opacity-20"></div>
-
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">
             {isLoadingCategory ? (
               <Skeleton className="h-12 w-60 mx-auto" />
             ) : category ? (
-              `${category.name} Articles`
+              `${category?.['category']?.name} Articles`
             ) : (
               "Category"
             )}
@@ -91,10 +95,10 @@ export default function CategoryPostsPage({ params }) {
           {isLoadingCategory ? (
             <Skeleton className="h-6 w-96 mx-auto mb-8" />
           ) : (
-            category &&
-            category.description && (
+            category?.['category'] &&
+            category?.['category']?.description && (
               <p className="text-lg md:text-xl text-white/80 max-w-3xl mx-auto mb-8">
-                {category.description}
+                {category?.['category']?.description}
               </p>
             )
           )}
@@ -151,9 +155,9 @@ export default function CategoryPostsPage({ params }) {
               </div>
             ))}
           </div>
-        ) : posts && posts.length > 0 ? (
+        ) : category && category['posts'] && category['posts'].length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
+            {category['posts'].map((post) => (
               <div
                 key={post.id}
                 className="flex flex-col h-full bg-black/20 border border-primary/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 group"

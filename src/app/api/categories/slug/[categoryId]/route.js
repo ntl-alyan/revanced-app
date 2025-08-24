@@ -28,22 +28,23 @@ export async function GET(req, { params }) {
     const isAdmin = userRole === 'admin';
     
     // Build query based on user role
-    let query = { categoryId: category._id }; // Use the category's ID
+    let query = { categoryId: category._id.toString() }; // Use the category's ID
     if (!isAdmin) {
       query.status = 'published'; // Only published posts for non-admins
     }
-    
+
     // Find posts with appropriate filters
     const categoryPosts = await db.collection('posts')
       .find(query)
       .toArray();
-    
+console.log(query)
     // Optionally, you can include category info in the response
     const response = {
       category: {
         id: category._id,
         name: category.name,
-        slug: category.slug
+        slug: category.slug,
+        description: category.description
       },
       posts: categoryPosts
     };

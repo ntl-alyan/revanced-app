@@ -1,63 +1,65 @@
-import { useState } from "react";
-import { MainLayout } from "@/components/layout/main-layout";
-import { PageHeader } from "@/components/layout/page-header";
-import { RichTextEditor } from "@/components/editor/rich-text-editor";
+"use client"
+import { useState, useEffect } from "react";
+import { MainLayout } from "@/src/components/layout/main-layout";
+import { PageHeader } from "@/src/components/layout/page-header";
+import { RichTextEditor } from "@/src/components/editor/rich-text-editor";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertPostSchema, InsertPost } from "@shared/schema";
-import { z } from "zod";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { 
-  Card, 
-  CardContent, 
-  CardFooter
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
-import { generateSlug } from "@/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const extendedPostSchema = insertPostSchema.extend({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  slug: z.string().min(3, "Slug must be at least 3 characters"),
-  content: z.string().optional(),
-});
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Textarea } from "@/src/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
+import { apiRequest, queryClient } from "@/src/lib/queryClient";
+import { useToast } from "@/src/hooks/use-toast";
+import { useAuth } from "@/src/hooks/use-auth";
+import { generateSlug } from "@/src/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
+import { Loader2 } from "lucide-react";
+import { useRouter,useParams } from "next/navigation";
 
 
-export default function CreatePostPage() {
+export default function EditPostPage() {
+  const { id } = useParams();
+  const postId = id;
+
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
+  const router = useRouter();
   const [content, setContent] = useState("");
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
 
-  const { data: categories } = useQuery({
+  const {
+    data: post,
+    isLoading: postLoading,
+    error: postError,
+  } = useQuery({
+    queryKey: [`/api/posts/${postId}`],
+    queryFn: () => apiRequest("GET", `/api/posts/${postId}`),
+    // enabled: !isNaN(postId),
+  });
+
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/categories"],
     queryFn: () => apiRequest("GET", "/api/categories"), // now returns JSON
   });
 
   const form = useForm({
-    resolver: zodResolver(extendedPostSchema),
     defaultValues: {
       title: "",
       slug: "",
@@ -66,78 +68,120 @@ export default function CreatePostPage() {
       status: "draft",
       metaTitle: "",
       metaDescription: "",
-      author: user?._id,
+      categoryId: "",
+      author: user?.id,
     },
   });
 
+  // Update form with post data once loaded
+  useEffect(() => {
+    if (post) {
+      console.log(post);
+      form.reset({
+        title: post.title,
+        slug: post.slug,
+        content: post.content || "",
+        excerpt: post.excerpt || "",
+        categoryId: post.categoryId?.toString() || "",
+        status: post.status,
+        metaTitle: post.metaTitle || "",
+        metaDescription: post.metaDescription || "",
+        featuredImage: post.featuredImage || "",
+        author: post.author?.toString() || "",
+      });
+      setContent(post.content || "");
+    }
+  }, [post, form]);
+
   const watchTitle = form.watch("title");
 
-  const createPostMutation = useMutation({
+  const updatePostMutation = useMutation({
     mutationFn: async (data) => {
-      const res = await apiRequest("POST", "/api/posts", data);
-      return res.json();
+      const res = await apiRequest("PUT", `/api/posts/${postId}`, data);
+      return res;
     },
     onSuccess: () => {
       toast({
-        title: "Post created",
-        description: "Your post has been created successfully",
+        title: "Post updated",
+        description: "Your post has been updated successfully",
       });
+      queryClient.invalidateQueries({ queryKey: [`/api/posts/${postId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      navigate("/admin/posts");
+      router.push("/admin/posts");
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: `Failed to create post: ${error.message}`,
+        description: `Failed to update post: ${error.message}`,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data) => {
-    console.log(data)
     // Include content from RichTextEditor
     const postData = {
       ...data,
       content,
-      author: user?._id
     };
-    console.log(postData)
-    createPostMutation.mutate(postData);
+    updatePostMutation.mutate(postData);
   };
 
   const handleGenerateSlug = () => {
     if (!watchTitle) return;
-    
+
     setIsGeneratingSlug(true);
     const slug = generateSlug(watchTitle);
     form.setValue("slug", slug);
-    
+
     // Auto-generate meta title if empty
     if (!form.getValues("metaTitle")) {
       form.setValue("metaTitle", watchTitle);
     }
-    
+
     setIsGeneratingSlug(false);
   };
 
   // Redirect if not authenticated
   if (!user) {
-    return <Redirect to="/auth" />;
+    return router.push("/auth");
+  }
+
+  // Show loading state
+  if (postLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (postError || !post) {
+    return (
+      <MainLayout>
+        <div className="text-center py-10">
+          <h2 className="text-xl font-semibold text-red-500 mb-2">
+            Error Loading Post
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {postError ? postError.message : "Post not found"}
+          </p>
+          <Button onClick={() => router.push("/posts")}>Return to Posts</Button>
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
     <MainLayout>
-      <PageHeader
-        title="Create Post"
-        description="Create a new blog post"
-      />
+      <PageHeader title="Edit Post" description={`Editing: ${post.title}`} />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-    console.log("Form validation errors:", errors, user.toObject()
-  )})}  className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Card>
@@ -149,18 +193,10 @@ export default function CreatePostPage() {
                       <FormItem className="mb-4">
                         <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Enter post title" 
-                            {...field} 
+                          <Input
+                            placeholder="Enter post title"
+                            {...field}
                             className="text-lg font-medium"
-                            onChange={(e) => {
-                              field.onChange(e);
-                              // Auto-update slug only if slug is empty
-                              if (!form.getValues("slug")) {
-                                const slug = generateSlug(e.target.value);
-                                form.setValue("slug", slug);
-                              }
-                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -178,9 +214,9 @@ export default function CreatePostPage() {
                           <FormControl>
                             <Input placeholder="post-slug" {...field} />
                           </FormControl>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            variant="outline"
                             onClick={handleGenerateSlug}
                             disabled={isGeneratingSlug || !watchTitle}
                           >
@@ -212,10 +248,14 @@ export default function CreatePostPage() {
                 <CardContent className="pt-6">
                   <Tabs defaultValue="general">
                     <TabsList className="w-full">
-                      <TabsTrigger value="general" className="flex-1">General</TabsTrigger>
-                      <TabsTrigger value="seo" className="flex-1">SEO</TabsTrigger>
+                      <TabsTrigger value="general" className="flex-1">
+                        General
+                      </TabsTrigger>
+                      <TabsTrigger value="seo" className="flex-1">
+                        SEO
+                      </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="general" className="pt-4 space-y-4">
                       <FormField
                         control={form.control}
@@ -223,9 +263,9 @@ export default function CreatePostPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Status</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || post?.status}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -234,7 +274,9 @@ export default function CreatePostPage() {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="published">Published</SelectItem>
+                                <SelectItem value="published">
+                                  Published
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -244,13 +286,13 @@ export default function CreatePostPage() {
 
                       <FormField
                         control={form.control}
-                        name="category"
+                        name="categoryId"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Category</FormLabel>
-                            <Select 
-                              onValueChange={(value) => field.onChange(value)} 
-                              value={field.value?.toString()}
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value?.toString() || post?.categoryId} // Ensure value is string
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -258,14 +300,15 @@ export default function CreatePostPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {categories?.map((category) => (
-                                  <SelectItem 
-                                    key={category._id} 
-                                    value={category._id.toString()}
-                                  >
-                                    {category.name}
-                                  </SelectItem>
-                                ))}
+                                {!categoriesLoading &&
+                                  categories?.map((category) => (
+                                    <SelectItem
+                                      key={category._id}
+                                      value={category._id.toString()} // Ensure value is string
+                                    >
+                                      {category.name}
+                                    </SelectItem>
+                                  ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -280,9 +323,9 @@ export default function CreatePostPage() {
                           <FormItem>
                             <FormLabel>Excerpt</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Brief excerpt of your post..." 
-                                {...field} 
+                              <Textarea
+                                placeholder="Brief excerpt of your post..."
+                                {...field}
                                 rows={4}
                               />
                             </FormControl>
@@ -314,9 +357,9 @@ export default function CreatePostPage() {
                           <FormItem>
                             <FormLabel>Meta Description</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="SEO Description..." 
-                                {...field} 
+                              <Textarea
+                                placeholder="SEO Description..."
+                                {...field}
                                 rows={4}
                               />
                             </FormControl>
@@ -332,7 +375,10 @@ export default function CreatePostPage() {
                           <FormItem>
                             <FormLabel>Featured Image URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="/uploads/image.webp" {...field} />
+                              <Input
+                                placeholder="/uploads/image.webp"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -345,11 +391,17 @@ export default function CreatePostPage() {
 
               <Card>
                 <CardFooter className="flex justify-between pt-6">
-                  <Button variant="outline" type="button" onClick={() => navigate("/admin/posts")}>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => router.push("/posts")}
+                  >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createPostMutation.isPending}>
-                    {createPostMutation.isPending ? "Creating..." : "Create Posting"}
+                  <Button type="submit" disabled={updatePostMutation.isPending}>
+                    {updatePostMutation.isPending
+                      ? "Updating..."
+                      : "Update Post"}
                   </Button>
                 </CardFooter>
               </Card>

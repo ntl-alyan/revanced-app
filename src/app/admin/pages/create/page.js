@@ -31,14 +31,14 @@ import {
 import { apiRequest, queryClient } from "@/src/lib/queryClient";
 import { useToast } from "@/src/hooks/use-toast";
 import { useAuth } from "@/src/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 import { generateSlug } from "@/src/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 
 export default function CreatePagePage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
+  const router = useRouter();
   const [content, setContent] = useState("");
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
 
@@ -68,7 +68,7 @@ export default function CreatePagePage() {
     });
     queryClient.invalidateQueries({ queryKey: ["/api/pages"] });
     queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-    navigate("/admin/pages");
+    router.push("/admin/pages");
   },
   onError: (error) => {
     toast({
@@ -255,7 +255,7 @@ export default function CreatePagePage() {
 
               <Card>
                 <CardFooter className="flex justify-between pt-6">
-                  <Button variant="outline" type="button" onClick={() => navigate("/admin/pages")}>
+                  <Button variant="outline" type="button" onClick={() => router.push("/admin/pages")}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={createPageMutation.isPending}>

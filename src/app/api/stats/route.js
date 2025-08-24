@@ -48,7 +48,8 @@ export async function GET(req) {
           id: post._id,
           title: post.title,
           createdAt: post.createdAt,
-          status: post.status
+          status: post.status,
+          categoryId:post.categoryId,
         })),
       categoryStats: categories.map(category => {
         const categoryPosts = posts.filter(post => 
