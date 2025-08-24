@@ -16,7 +16,7 @@ import {
   ExternalLink,
   Globe,
   Link2,
-  Code
+  Code,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/src/hooks/use-theme-provider";
@@ -64,131 +64,149 @@ export function Sidebar({ className, isMobileOpen, onCloseMobile }) {
       )}
     >
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <Link href="/admin" className="text-xl font-bold text-primary dark:text-white flex items-center gap-2">
+        <Link
+          href="/admin"
+          className="text-xl font-bold text-primary dark:text-white flex items-center gap-2"
+        >
           <Laptop className="h-8 w-8 text-primary" />
           <span>AdminPanel</span>
         </Link>
-        <button 
+        <button
           className="lg:hidden text-gray-500 focus:outline-none"
           onClick={onCloseMobile}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z"
+              clipRule="evenodd"
+            />
           </svg>
         </button>
       </div>
-      
+
       <div className="px-4 py-2">
-        <NavItem 
-          icon={<LayoutDashboard className="h-5 w-5" />} 
-          href="/admin" 
-          label="Dashboard" 
+        <NavItem
+          icon={<LayoutDashboard className="h-5 w-5" />}
+          href="/admin"
+          label="Dashboard"
           onClick={onCloseMobile}
         />
-        
+
         <div className="mt-4">
           <div className="px-4 py-2 flex items-center justify-between text-gray-600 dark:text-gray-400">
-            <span className="text-sm font-medium uppercase tracking-wider">Content</span>
+            <span className="text-sm font-medium uppercase tracking-wider">
+              Content
+            </span>
           </div>
-          
-          <NavItem 
-            icon={<FileText className="h-5 w-5" />} 
-            href="/admin/posts" 
-            label="Posts" 
+
+          <NavItem
+            icon={<FileText className="h-5 w-5" />}
+            href="/admin/posts"
+            label="Posts"
             onClick={onCloseMobile}
           />
-          
-          <NavItem 
-            icon={<File className="h-5 w-5" />} 
-            href="/admin/pages" 
-            label="Pages" 
+
+          <NavItem
+            icon={<File className="h-5 w-5" />}
+            href="/admin/pages"
+            label="Pages"
             onClick={onCloseMobile}
           />
-          
-          <NavItem 
-            icon={<Home className="h-5 w-5" />} 
-            href="/admin/homepage" 
-            label="Homepage" 
+
+          <NavItem
+            icon={<Home className="h-5 w-5" />}
+            href="/admin/homepage"
+            label="Homepage"
             onClick={onCloseMobile}
           />
-          
-          <NavItem 
-            icon={<Tag className="h-5 w-5" />} 
-            href="/admin/categories" 
-            label="Categories" 
+
+          <NavItem
+            icon={<Tag className="h-5 w-5" />}
+            href="/admin/categories"
+            label="Categories"
             onClick={onCloseMobile}
           />
         </div>
-        
+
         <div className="mt-4">
-          <NavItem 
-            icon={<Image className="h-5 w-5" />} 
-            href="/admin/media" 
-            label="Media" 
+          <NavItem
+            icon={<Image className="h-5 w-5" />}
+            href="/admin/media"
+            label="Media"
             onClick={onCloseMobile}
           />
         </div>
-        
+
         <div className="mt-4">
-          <NavItem 
-            icon={<Package className="h-5 w-5" />} 
-            href="/admin/apps" 
-            label="Apps" 
+          <NavItem
+            icon={<Package className="h-5 w-5" />}
+            href="/admin/apps"
+            label="Apps"
             onClick={onCloseMobile}
           />
         </div>
-        
+
         <div className="mt-4">
           <div className="px-4 py-2 flex items-center justify-between text-gray-600 dark:text-gray-400">
-            <span className="text-sm font-medium uppercase tracking-wider">SEO</span>
+            <span className="text-sm font-medium uppercase tracking-wider">
+              SEO
+            </span>
           </div>
-          
-          <NavItem 
-            icon={<Link2 className="h-5 w-5" />} 
-            href="/admin/redirects" 
-            label="URL Redirects" 
+
+          <NavItem
+            icon={<Link2 className="h-5 w-5" />}
+            href="/admin/redirects"
+            label="URL Redirects"
             onClick={onCloseMobile}
           />
-          
-          <NavItem 
-            icon={<Globe className="h-5 w-5" />} 
-            href="/admin/sitemap" 
-            label="Sitemap" 
+
+          <NavItem
+            icon={<Globe className="h-5 w-5" />}
+            href="/admin/sitemap"
+            label="Sitemap"
             onClick={onCloseMobile}
           />
-          
-          <NavItem 
-            icon={<Code className="h-5 w-5" />} 
-            href="/admin/structured-data" 
-            label="Structured Data" 
+
+          <NavItem
+            icon={<Code className="h-5 w-5" />}
+            href="/admin/structured-data"
+            label="Structured Data"
             onClick={onCloseMobile}
           />
         </div>
-        
+
         <div className="mt-4">
           <div className="px-4 py-2 flex items-center justify-between text-gray-600 dark:text-gray-400">
-            <span className="text-sm font-medium uppercase tracking-wider">System</span>
+            <span className="text-sm font-medium uppercase tracking-wider">
+              System
+            </span>
           </div>
-          
-          {user?.role === 'admin' && (
-            <NavItem 
-              icon={<User className="h-5 w-5" />} 
-              href="/admin/users" 
-              label="Users" 
+
+          {user?.role === "admin" && (
+            <NavItem
+              icon={<User className="h-5 w-5" />}
+              href="/admin/users"
+              label="Users"
               onClick={onCloseMobile}
             />
           )}
-          
-          <NavItem 
-            icon={<Settings className="h-5 w-5" />} 
-            href="/admin/settings" 
-            label="Settings" 
+
+          <NavItem
+            icon={<Settings className="h-5 w-5" />}
+            href="/admin/settings"
+            label="Settings"
             onClick={onCloseMobile}
           />
         </div>
       </div>
-      
-      <div className="px-4 py-4 mt-auto border-t border-gray-200 dark:border-gray-700 absolute bottom-0 w-full">
+
+      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
         <button
           className="flex items-center px-4 py-2 text-primary hover:bg-primary hover:bg-opacity-10 rounded-md transition-colors w-full"
           onClick={() => {

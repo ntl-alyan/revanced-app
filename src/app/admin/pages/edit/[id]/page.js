@@ -31,8 +31,7 @@ import {
 import { apiRequest, queryClient } from "@/src/lib/queryClient";
 import { useToast } from "@/src/hooks/use-toast";
 import { useAuth } from "@/src/hooks/use-auth";
-import { Redirect, useLocation } from "wouter";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { generateSlug } from "@/src/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { Loader2 } from "lucide-react";
@@ -41,7 +40,7 @@ export default function EditPagePage() {
   const { id } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
+  const router = useRouter();
   const [content, setContent] = useState("");
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
 
@@ -96,7 +95,7 @@ export default function EditPagePage() {
       queryClient.invalidateQueries({ queryKey: [`/api/pages/${id}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/pages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      navigate("/admin/pages");
+      router.push("/admin/pages");
     },
     onError: (error) => {
       toast({
@@ -150,7 +149,7 @@ export default function EditPagePage() {
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             {pageError?.message || "Page not found"}
           </p>
-          <Button onClick={() => navigate("/admin/pages")}>
+          <Button onClick={() => router.push("/admin/pages")}>
             Return to Pages
           </Button>
         </div>
@@ -246,7 +245,7 @@ export default function EditPagePage() {
                             <FormLabel>Status</FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              value={field.value}
+                              value={field.value || page?.status}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -303,7 +302,7 @@ export default function EditPagePage() {
 
               <Card>
                 <CardFooter className="flex justify-between pt-6">
-                  <Button variant="outline" type="button" onClick={() => navigate("/admin/pages")}>
+                  <Button variant="outline" type="button" onClick={() => router.push("/admin/pages")}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={updatePageMutation.isPending}>

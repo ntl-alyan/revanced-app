@@ -33,5 +33,6 @@ module.exports = {
   },
   plugins: [
     require("tailwindcss-animate"), // for shadcn/ui animations
+    require("@tailwindcss/typography"), // ⬅️ add this
   ],
 };

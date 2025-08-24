@@ -97,7 +97,8 @@ export default function PublicLayout({ children }) {
   // Extract SEO settings
   const getSetting = (key, defaultValue = '') => {
     const camelKey = convertToCamelCase(key);
-    return settings?.find(s => s.settingKey === camelKey)?.settingValue || defaultValue;
+    const find= settings?.find(s => s.settingKey === camelKey)?.settingValue || defaultValue;
+    return find;
   };
   
   const siteTitle = getSetting('site_title', 'ReVanced');
@@ -143,12 +144,7 @@ export default function PublicLayout({ children }) {
         {twitterImage && <meta name="twitter:image" content={twitterImage} />}
         
         {/* Custom Header Scripts - Trusted admin-only content */}
-        {getSetting('header_scripts') && (
-          <script type="text/javascript" 
-            data-admin-script="true"
-            dangerouslySetInnerHTML={{ __html: getSetting('header_scripts') }} 
-          />
-        )}
+       
       </Head>
       
       {/* Header with solid background to prevent click-through issues */}
@@ -253,6 +249,13 @@ export default function PublicLayout({ children }) {
               </div>
             </div>
           )}
+
+           {getSetting('header_scripts') && (
+          <script type="text/javascript" 
+            data-admin-script="true"
+            dangerouslySetInnerHTML={{ __html: getSetting('header_scripts') }} 
+          />
+        )}
         </div>
       </header>
 
@@ -368,7 +371,7 @@ export default function PublicLayout({ children }) {
         
         {/* Custom Footer Scripts - Trusted admin-only content */}
         {getSetting('footer_scripts') && (
-          <div 
+          <script type="text/javascript" 
             data-admin-script="true"
             dangerouslySetInnerHTML={{ __html: getSetting('footer_scripts') }} 
           />

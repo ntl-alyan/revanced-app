@@ -1,12 +1,12 @@
 import React from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
-import { useLocation } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 // Extremely simplified version - just English + current language to prevent hook issues
 export function LanguageSelector() {
-  const [, navigate] = useLocation();
+  const router = useRouter()
   
   // Get current language code from URL
   const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -56,20 +56,20 @@ export function LanguageSelector() {
     
     // Root path case
     if (pathParts.length === 0) {
-      navigate(isDefaultLanguage ? '/' : `/${langCode}`);
+      router.push(isDefaultLanguage ? '/' : `/${langCode}`);
       return;
     }
     
     // Language code in URL case
     if (firstPartIsLanguage) {
       const routeParts = pathParts.slice(1);
-      navigate(isDefaultLanguage 
+      router.push(isDefaultLanguage 
         ? '/' + routeParts.join('/') 
         : '/' + langCode + '/' + routeParts.join('/')
       );
     } else {
       // No language in URL
-      navigate(isDefaultLanguage
+      router.push(isDefaultLanguage
         ? '/' + pathParts.join('/')
         : '/' + langCode + '/' + pathParts.join('/')
       );
