@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link'
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import {
   CheckCircle2,
   Shield,
@@ -32,7 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
-import Head from 'next/head'
+import Head from "next/head";
 import { useCallback } from "react";
 
 export default function PublicHomePage() {
@@ -249,32 +249,35 @@ export default function PublicHomePage() {
           </p>
 
           <div className="flex flex-wrap justify-center gap-5">
-            {homepage?.downloadId ? (
+            <div className="row">
+              {homepage?.downloadId ? (
+                <Button
+                  size="lg"
+                  className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                  asChild
+                >
+                  <Link href={`/download/home/${homepage.downloadId}`}>
+                    <Download className="mr-2 h-5 w-5" />
+                    Download ReVanced
+                  </Link>
+                </Button>
+              ) : null}
+
               <Button
                 size="lg"
-                className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                variant="default"
+                className="text-lg px-8 h-14 hover:bg-primary/90 shadow-lg shadow-primary/20 flex items-center gap-2"
                 asChild
               >
-                <Link href={`/download/home/${homepage.downloadId}`}>
-                  <Download className="mr-2 h-5 w-5" />
-                  Download ReVanced
+                <Link href={`/apps`}>
+                  Explore Apps
+                  <CornerRightDown className="h-5 w-5 text-white" />
                 </Link>
               </Button>
-            ) : null}
-
-            <Button
-              size="lg"
-              className="text-lg px-8 h-14 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
-              asChild
-            >
-              <Link href={`/apps`}>Explore Apps</Link>
-            </Button>
+            </div>
           </div>
 
           {/* Scroll down indicator */}
-          <div className="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 -translate-y-10 animate-bounce">
-            <CornerRightDown className="h-6 w-6 text-primary" />
-          </div>
         </div>
       </section>
 
