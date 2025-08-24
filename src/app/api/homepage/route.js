@@ -8,7 +8,7 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
     
-    const data = await db.collection('homepage').find({}).toArray();
+    const data = await db.collection('homepage').findOne({});
     
     return NextResponse.json(data);
   } catch (e) {

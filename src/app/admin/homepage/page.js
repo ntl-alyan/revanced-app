@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/src/lib/queryClient";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/src/components/ui/card";
@@ -16,13 +16,13 @@ import { Textarea } from "@/src/components/ui/textarea";
 export default function HomepagePage() {
   const { toast } = useToast();
 
-  // Fetch homepage data
+  // ✅ Fetch homepage data
   const { data: homepageData, isLoading } = useQuery({
     queryKey: ["/api/homepage"],
     queryFn: () => apiRequest("GET", "/api/homepage"),
   });
 
-  // Setup form with empty defaults
+  // ✅ Setup form
   const form = useForm({
     defaultValues: {
       sections: [],
@@ -38,12 +38,13 @@ export default function HomepagePage() {
     },
   });
 
+  // ✅ Field array
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "sections",
   });
 
-  // Populate form when homepageData loads
+  // ✅ Reset only once when homepageData changes
   useEffect(() => {
     if (homepageData) {
       form.reset({
@@ -58,10 +59,12 @@ export default function HomepagePage() {
         ogDescription: homepageData.ogDescription || "",
         ogImage: homepageData.ogImage || "",
       });
+
+
     }
   }, [homepageData, form]);
 
-  // Mutation for updating homepage
+  // ✅ Mutation for updating homepage
   const updateMutation = useMutation({
     mutationFn: async (data) => apiRequest("PATCH", "/api/homepage", data),
     onSuccess: () => {
@@ -83,20 +86,19 @@ export default function HomepagePage() {
     if (index === 0) return;
     const sections = [...form.getValues().sections];
     [sections[index - 1], sections[index]] = [sections[index], sections[index - 1]];
-    form.setValue("sections", sections);
+    form.setValue("sections", sections, { shouldDirty: true });
   };
 
   const moveDown = (index) => {
     const sections = [...form.getValues().sections];
     if (index === sections.length - 1) return;
     [sections[index], sections[index + 1]] = [sections[index + 1], sections[index]];
-    form.setValue("sections", sections);
+    form.setValue("sections", sections, { shouldDirty: true });
   };
 
   const addSection = () =>
     append({ type: "content", title: "New Section", content: "", items: [] });
 
-  // Loading state
   if (isLoading || !homepageData) {
     return (
       <MainLayout>
@@ -126,9 +128,10 @@ export default function HomepagePage() {
           <Save className="h-4 w-4" /> Save
         </Button>
       </div>
+
       <div className="space-y-6">
         {fields.map((field, index) => (
-          <Card key={field._id}>
+          <Card key={field.id /* ✅ use RHF-generated id, not _id */}>
             <CardHeader className="flex justify-between items-center">
               <CardTitle>Section {index + 1}</CardTitle>
               <div className="flex gap-1">
