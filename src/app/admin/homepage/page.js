@@ -15,27 +15,26 @@ import { Textarea } from "@/src/components/ui/textarea";
 
 export default function HomepagePage() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("content");
 
   // Fetch homepage data
- const { data: homepageData, isLoading } = useQuery({
-  queryKey: ["/api/homepage"],
-  queryFn: () => apiRequest("GET", "/api/homepage"), // now returns JSON
-});
+  const { data: homepageData, isLoading } = useQuery({
+    queryKey: ["/api/homepage"],
+    queryFn: () => apiRequest("GET", "/api/homepage"),
+  });
 
-  // Setup form
+  // Setup form with empty defaults
   const form = useForm({
     defaultValues: {
-      sections: homepageData?.sections || [],
-      version: homepageData?.version || "",
-      downloadUrl: homepageData?.downloadUrl || "",
-      downloadId: homepageData?.downloadId || "",
-      metaTitle: homepageData?.metaTitle || "",
-      metaDescription: homepageData?.metaDescription || "",
-      metaKeywords: homepageData?.metaKeywords || "",
-      ogTitle: homepageData?.ogTitle || "",
-      ogDescription: homepageData?.ogDescription || "",
-      ogImage: homepageData?.ogImage || "",
+      sections: [],
+      version: "",
+      downloadUrl: "",
+      downloadId: "",
+      metaTitle: "",
+      metaDescription: "",
+      metaKeywords: "",
+      ogTitle: "",
+      ogDescription: "",
+      ogImage: "",
     },
   });
 
@@ -44,7 +43,7 @@ export default function HomepagePage() {
     name: "sections",
   });
 
-  // Update form when homepageData changes
+  // Populate form when homepageData loads
   useEffect(() => {
     if (homepageData) {
       form.reset({
@@ -94,7 +93,8 @@ export default function HomepagePage() {
     form.setValue("sections", sections);
   };
 
-  const addSection = () => append({ type: "content", title: "New Section", content: "", items: [] });
+  const addSection = () =>
+    append({ type: "content", title: "New Section", content: "", items: [] });
 
   // Loading state
   if (isLoading || !homepageData) {
@@ -119,24 +119,41 @@ export default function HomepagePage() {
           <Eye className="h-4 w-4" /> Preview
         </Button>
 
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={updateMutation.isPending}>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={updateMutation.isPending}
+        >
           <Save className="h-4 w-4" /> Save
         </Button>
       </div>
-
       <div className="space-y-6">
         {fields.map((field, index) => (
-          <Card key={field.id}>
+          <Card key={field._id}>
             <CardHeader className="flex justify-between items-center">
               <CardTitle>Section {index + 1}</CardTitle>
               <div className="flex gap-1">
-                <Button type="button" variant="ghost" size="sm" onClick={() => moveUp(index)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => moveUp(index)}
+                >
                   <MoveUp className="h-4 w-4" />
                 </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => moveDown(index)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => moveDown(index)}
+                >
                   <MoveDown className="h-4 w-4" />
                 </Button>
-                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => remove(index)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -145,12 +162,10 @@ export default function HomepagePage() {
               <Input
                 placeholder="Section Title"
                 {...form.register(`sections.${index}.title`)}
-                value={form.watch(`sections.${index}.title`) || ""}
               />
               <Textarea
                 placeholder="Section Content"
                 {...form.register(`sections.${index}.content`)}
-                value={form.watch(`sections.${index}.content`) || ""}
               />
             </CardContent>
           </Card>
