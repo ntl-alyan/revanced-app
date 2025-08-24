@@ -48,10 +48,12 @@ export default function PostsPage() {
 
 	const { data: posts, isLoading: postsLoading } = useQuery<({
 		queryKey: ["/api/posts"],
+		queryFn: () => apiRequest("GET", "/api/posts"), // now returns JSON
 	});
 
 	const { data: categories, isLoading: categoriesLoading } = useQuery({
 		queryKey: ["/api/categories"],
+		queryFn: () => apiRequest("GET", "/api/categories"), // now returns JSON
 	});
 
 	const deletePostMutation = useMutation({

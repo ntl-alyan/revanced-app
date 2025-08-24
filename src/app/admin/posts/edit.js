@@ -63,6 +63,7 @@ export default function EditPostPage() {
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["/api/categories"],
+    queryFn: () => apiRequest("GET", "/api/categories"), // now returns JSON
   });
 
   const form = useForm({

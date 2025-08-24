@@ -53,6 +53,7 @@ export default function CreatePostPage() {
 
   const { data: categories } = useQuery({
     queryKey: ["/api/categories"],
+    queryFn: () => apiRequest("GET", "/api/categories"), // now returns JSON
   });
 
   const form = useForm({
