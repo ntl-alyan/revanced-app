@@ -1,24 +1,6 @@
-import { isAdmin } from "@/src/lib/auth-utils";
-import clientPromise from "@/src/lib/mongo";
-import { NextResponse } from "next/server";
-
-// GET homepage data
-export async function GET() {
-  try {
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB);
-    
-    const data = await db.collection('homepage').find({}).toArray();
-    
-    return NextResponse.json(data);
-  } catch (e) {
-    console.log(e);
-    return NextResponse.json(
-      { error: 'Failed to fetch data' },
-      { status: 500 }
-    );
-  }
-}
+import clientPromise from '@/src/lib/mongo';
+import { NextResponse } from 'next/server';
+import { isAdmin } from '@/src/lib/auth-utils';
 
 export async function PATCH(req) {
   try {
@@ -69,14 +51,14 @@ export async function PATCH(req) {
       });
     }
 
-    if (!result) {
+    if (!result.value) {
       return NextResponse.json(
         { message: "Failed to update homepage" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(result.value);
 
   } catch (error) {
     console.error('Update homepage error:', error);
@@ -86,4 +68,3 @@ export async function PATCH(req) {
     );
   }
 }
-

@@ -15,7 +15,7 @@ export function LanguageSelector() {
   // Only query for all languages
   const { datas, isLoading } = useQuery({
     queryKey: ['/api/languages'],
-    staleTime: 300000,
+    // staleTime: 300000,
     gcTime: 600000,
     queryFn: async () => {
       const response = await fetch('/api/languages?active=true');
